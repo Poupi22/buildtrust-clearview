@@ -26,6 +26,7 @@ const navItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { profile, role, signOut } = useAuth();
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-card border-r h-screen sticky top-0">
@@ -55,12 +56,15 @@ export function AppSidebar() {
       <div className="p-4 border-t">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-            {currentUser.avatar}
+            {profile?.avatar_initials || "U"}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{currentUser.name}</p>
-            <p className="text-xs text-muted-foreground truncate">Admin</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{profile?.full_name || "User"}</p>
+            <p className="text-xs text-muted-foreground truncate capitalize">{role?.replace("-", " ") || "User"}</p>
           </div>
+          <button onClick={signOut} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
+            <LogOut className="h-4 w-4 text-muted-foreground" />
+          </button>
         </div>
       </div>
     </aside>
