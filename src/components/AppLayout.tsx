@@ -9,9 +9,10 @@ import {
   Users,
   Settings,
   Bell,
+  LogOut,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
-import { currentUser } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
