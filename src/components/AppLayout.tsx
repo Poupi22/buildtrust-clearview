@@ -100,13 +100,14 @@ export function MobileBottomNav() {
 }
 
 export function TopBar() {
+  const { profile } = useAuth();
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-card px-4 py-3 lg:px-6">
       <div className="lg:hidden">
         <img src={logo} alt="BuildTrust" className="h-8 object-contain" />
       </div>
       <div className="hidden lg:block">
-        <h2 className="text-lg font-display font-bold">{currentUser.company}</h2>
+        <h2 className="text-lg font-display font-bold">{profile?.company || "BuildTrust"}</h2>
       </div>
       <div className="flex items-center gap-3">
         <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
@@ -114,7 +115,7 @@ export function TopBar() {
           <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-accent" />
         </button>
         <div className="lg:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-          {currentUser.avatar}
+          {profile?.avatar_initials || "U"}
         </div>
       </div>
     </header>
