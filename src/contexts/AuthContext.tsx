@@ -38,42 +38,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
-    const [profileRes, roleRes] = await Promise.all([
-      supabase.from("profiles").select("full_name, company, avatar_initials").eq("user_id", userId).single(),
-      supabase.from("user_roles").select("role").eq("user_id", userId).single(),
-    ]);
-    if (profileRes.data) setProfile(profileRes.data);
-    if (roleRes.data) setRole(roleRes.data.role);
-  };
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchUserData(session.user.id);
-        } else {
-          setProfile(null);
-          setRole(null);
-        }
-        setLoading(false);
-      }
-    );
+    let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id).then(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!mounted) return;
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    const initializeAuth = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+    };
+
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchUserData = async () => {
+      setLoading(true);
+
+      if (!user) {
+        if (mounted) {
+          setProfile(null);
+          setRole(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const [profileRes, roleRes] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("full_name, company, avatar_initials")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+        ]);
+
+        if (!mounted) return;
+
+        setProfile(profileRes.data ?? null);
+        setRole(roleRes.data?.role ?? null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchUserData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
