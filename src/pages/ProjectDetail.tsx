@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   useProject, useMilestones, useReports, useIssues, useMedia,
   useUpdateMilestone, useDeleteMilestone, useToggleMediaPublish, getMediaUrl,
+  useSubmitMilestoneForReview, useReviewMilestone,
 } from "@/hooks/useBuildTrust";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
@@ -27,6 +28,8 @@ export default function ProjectDetail() {
   const updateMilestone = useUpdateMilestone();
   const deleteMilestone = useDeleteMilestone();
   const togglePublish = useToggleMediaPublish();
+  const submitForReview = useSubmitMilestoneForReview();
+  const reviewMilestone = useReviewMilestone();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>;
