@@ -1,11 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users } from "lucide-react";
+import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { useState } from "react";
-import { useProject, useMilestones, useReports, useIssues } from "@/hooks/useBuildTrust";
+import {
+  useProject, useMilestones, useReports, useIssues, useMedia,
+  useUpdateMilestone, useDeleteMilestone, useToggleMediaPublish, getMediaUrl,
+} from "@/hooks/useBuildTrust";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
+import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
+import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { toast } from "sonner";
 
 type Tab = "overview" | "milestones" | "reports" | "issues" | "photos";
 
@@ -15,6 +23,10 @@ export default function ProjectDetail() {
   const { data: milestones = [] } = useMilestones(id);
   const { data: reports = [] } = useReports(id);
   const { data: issues = [] } = useIssues(id);
+  const { data: media = [] } = useMedia(id);
+  const updateMilestone = useUpdateMilestone();
+  const deleteMilestone = useDeleteMilestone();
+  const togglePublish = useToggleMediaPublish();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>;
@@ -140,27 +152,51 @@ export default function ProjectDetail() {
       )}
 
       {activeTab === "milestones" && (
-        milestones.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
-        ) : (
-          <div className="space-y-3">
-            {milestones.map((m) => (
-              <div key={m.id} className="metric-card flex items-center gap-4">
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
+          </div>
+          {milestones.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
+          ) : milestones.map((m) => (
+            <div key={m.id} className="metric-card">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-semibold text-sm">{m.title}</span>
                     <StatusBadge status={m.status} />
+                    {m.is_published && <span className="text-xs text-primary">• Published</span>}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Planned: {m.planned_date ?? "—"} {m.actual_date && `· Actual: ${m.actual_date}`}
                   </p>
-                  <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
                 </div>
                 <span className="text-lg font-display font-bold">{m.progress}%</span>
               </div>
-            ))}
-          </div>
-        )
+              <Slider
+                value={[m.progress]}
+                max={100}
+                step={5}
+                onValueChange={(v) => {
+                  const progress = v[0];
+                  const status = progress >= 100 ? "completed" : progress > 0 ? "in-progress" : "pending";
+                  updateMilestone.mutate({
+                    id: m.id, project_id: project.id, progress, status: status as any,
+                    actual_date: progress >= 100 ? new Date().toISOString().slice(0, 10) : null,
+                  });
+                }}
+              />
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" variant="outline" onClick={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}>
+                  {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Publish</>}
+                </Button>
+                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
+                  if (confirm("Delete milestone?")) deleteMilestone.mutate({ id: m.id, project_id: project.id });
+                }}>Delete</Button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {activeTab === "reports" && (
@@ -215,10 +251,39 @@ export default function ProjectDetail() {
       )}
 
       {activeTab === "photos" && (
-        <div className="metric-card text-center py-12">
-          <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-          <h3 className="font-display font-bold">Site Photos</h3>
-          <p className="text-sm text-muted-foreground mt-1">Photo uploads coming in the next iteration.</p>
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <UploadMediaDialog projectId={project.id} />
+          </div>
+          {media.length === 0 ? (
+            <div className="metric-card text-center py-12">
+              <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">No photos yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {media.map((f: any) => (
+                <div key={f.id} className="metric-card p-2 space-y-2">
+                  {f.mime_type?.startsWith("image/") ? (
+                    <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
+                  ) : (
+                    <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="block aspect-square flex items-center justify-center bg-muted rounded-lg text-xs text-primary">
+                      <FileText className="h-8 w-8" />
+                    </a>
+                  )}
+                  {f.caption && <p className="text-xs truncate">{f.caption}</p>}
+                  <Button
+                    size="sm"
+                    variant={f.is_published ? "default" : "outline"}
+                    className="w-full"
+                    onClick={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
+                  >
+                    {f.is_published ? <><CheckCircle2 className="h-3 w-3 mr-1" />Published</> : "Publish"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
