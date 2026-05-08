@@ -215,37 +215,57 @@ export default function ClientPortal() {
                 <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
               </div>
             ) : publishedReports.map((r) => (
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {publishedReports.map((r) => (
-                <div key={r.id} className="metric-card">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display font-bold text-sm">{r.report_date}</span>
-                      <StatusBadge status={r.status} />
-                    </div>
+              <div key={r.id} className="metric-card">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display font-bold text-sm">{r.report_date}</span>
+                    <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-sm text-muted-foreground">{r.weather ?? "—"}</p>
-                  <p className="text-sm text-muted-foreground">Workforce on site: {r.workforce_count}</p>
-                  {r.tasks_completed && r.tasks_completed.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold text-foreground mb-1">Work Completed</p>
-                      <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
-                        {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                      </ul>
-                    </div>
-                  )}
+                  {r.reviewed_at && <span className="text-xs text-muted-foreground">Published {fmt(r.reviewed_at)}</span>}
                 </div>
-              ))}
-            </div>
-          )
+                <p className="text-sm text-muted-foreground">{r.weather ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">Workforce on site: {r.workforce_count}</p>
+                {r.tasks_completed && r.tasks_completed.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">Work Completed</p>
+                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
+                      {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
 
         {activeTab === "photos" && (
-          <div className="metric-card text-center py-12">
-            <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">Photo gallery coming in the next iteration.</p>
+          <div className="space-y-3">
+            {lastMediaUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMediaUpdate)}</p>}
+            {publishedMedia.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Photos Published</h3>
+                <p className="text-sm text-muted-foreground mt-1">Site photos will appear once approved by the project manager.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {publishedMedia.map((f: any) => (
+                  <div key={f.id} className="metric-card p-2 space-y-2">
+                    {f.mime_type?.startsWith("image/") ? (
+                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer">
+                        <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
+                      </a>
+                    ) : (
+                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="aspect-square flex items-center justify-center bg-muted rounded-lg">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                      </a>
+                    )}
+                    {f.caption && <p className="text-xs truncate px-1">{f.caption}</p>}
+                    <p className="text-[10px] text-muted-foreground px-1">{fmt(f.created_at)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
