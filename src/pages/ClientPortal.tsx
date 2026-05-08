@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useFirstProject, useMilestones, useReports } from "@/hooks/useBuildTrust";
+import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl } from "@/hooks/useBuildTrust";
 import logo from "@/assets/logo.jpg";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos";
@@ -21,10 +21,26 @@ export default function ClientPortal() {
   const { data: project, isLoading } = useFirstProject();
   const { data: milestones = [] } = useMilestones(project?.id);
   const { data: reports = [] } = useReports(project?.id);
+  const { data: media = [] } = useMedia(project?.id);
 
-  // RLS already filters out unpublished/draft for client role, but be defensive:
+  // Defensive client-side filter; RLS already restricts.
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
-  const visibleMilestones = milestones.filter((m) => m.status === "completed" || m.status === "in-progress");
+  const publishedMilestones = milestones.filter((m: any) => m.is_published);
+  const publishedMedia = media.filter((f: any) => f.is_published);
+
+  const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString() : "—");
+  const lastMilestoneUpdate = publishedMilestones.reduce<string | null>(
+    (acc, m: any) => (!acc || (m.updated_at && m.updated_at > acc) ? m.updated_at : acc),
+    null,
+  );
+  const lastMediaUpdate = publishedMedia.reduce<string | null>(
+    (acc, f: any) => (!acc || (f.created_at && f.created_at > acc) ? f.created_at : acc),
+    null,
+  );
+  const lastReportUpdate = publishedReports.reduce<string | null>(
+    (acc, r: any) => (!acc || (r.reviewed_at && r.reviewed_at > acc) ? r.reviewed_at : acc),
+    null,
+  );
 
   const tabs: { key: PortalTab; label: string; icon: React.ElementType }[] = [
     { key: "overview", label: "Overview", icon: Building2 },
@@ -116,18 +132,21 @@ export default function ClientPortal() {
         {activeTab === "overview" && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <StatCard label="Milestones Done" value={milestones.filter((m) => m.status === "completed").length} total={milestones.length} icon={<CheckCircle2 className="h-5 w-5 text-success" />} />
-              <StatCard label="In Progress" value={milestones.filter((m) => m.status === "in-progress").length} icon={<Clock className="h-5 w-5 text-primary" />} />
+              <StatCard label="Milestones Done" value={publishedMilestones.filter((m) => m.status === "completed").length} total={publishedMilestones.length} icon={<CheckCircle2 className="h-5 w-5 text-success" />} />
+              <StatCard label="In Progress" value={publishedMilestones.filter((m) => m.status === "in-progress").length} icon={<Clock className="h-5 w-5 text-primary" />} />
               <StatCard label="Published Updates" value={publishedReports.length} icon={<FileText className="h-5 w-5 text-primary" />} />
-              <StatCard label="Site Photos" value={0} icon={<Camera className="h-5 w-5 text-accent" />} />
+              <StatCard label="Site Photos" value={publishedMedia.length} icon={<Camera className="h-5 w-5 text-accent" />} />
             </div>
             <div className="metric-card">
-              <h3 className="font-display font-bold mb-4">Milestone Progress</h3>
-              {visibleMilestones.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No milestone updates yet.</p>
+              <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+                <h3 className="font-display font-bold">Milestone Progress</h3>
+                {lastMilestoneUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMilestoneUpdate)}</p>}
+              </div>
+              {publishedMilestones.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No milestone updates published yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {visibleMilestones.map((m) => (
+                  {publishedMilestones.map((m) => (
                     <div key={m.id} className="flex items-center gap-3">
                       <div className={`h-3 w-3 rounded-full shrink-0 ${m.status === "completed" ? "bg-success" : "bg-primary animate-pulse"}`} />
                       <div className="flex-1 min-w-0">
@@ -135,7 +154,9 @@ export default function ClientPortal() {
                           <span className="text-sm font-medium truncate">{m.title}</span>
                           <StatusBadge status={m.status} />
                         </div>
-                        {m.actual_date && <p className="text-xs text-muted-foreground">Completed: {m.actual_date}</p>}
+                        <p className="text-xs text-muted-foreground">
+                          {m.actual_date ? `Completed: ${m.actual_date}` : `Updated: ${fmt(m.updated_at)}`}
+                        </p>
                       </div>
                       <span className="text-sm font-display font-bold shrink-0">{m.progress}%</span>
                     </div>
@@ -148,9 +169,16 @@ export default function ClientPortal() {
 
         {activeTab === "milestones" && (
           <div className="space-y-3">
-            {milestones.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No milestones published yet.</p>
-            ) : milestones.map((m) => (
+            {lastMilestoneUpdate && (
+              <p className="text-xs text-muted-foreground">Last updated {fmt(lastMilestoneUpdate)}</p>
+            )}
+            {publishedMilestones.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Milestones Published</h3>
+                <p className="text-sm text-muted-foreground mt-1">Milestones appear once your project manager publishes them.</p>
+              </div>
+            ) : publishedMilestones.map((m) => (
               <div key={m.id} className="metric-card">
                 <div className="flex items-center gap-4">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
@@ -160,13 +188,14 @@ export default function ClientPortal() {
                     {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <span className="font-semibold text-sm">{m.title}</span>
                       <StatusBadge status={m.status} />
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
                     </p>
+                    <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
                     <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
                   </div>
                   <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
@@ -177,42 +206,66 @@ export default function ClientPortal() {
         )}
 
         {activeTab === "updates" && (
-          publishedReports.length === 0 ? (
-            <div className="metric-card text-center py-12">
-              <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <h3 className="font-display font-bold">No Published Updates Yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {publishedReports.map((r) => (
-                <div key={r.id} className="metric-card">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display font-bold text-sm">{r.report_date}</span>
-                      <StatusBadge status={r.status} />
-                    </div>
+          <div className="space-y-3">
+            {lastReportUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastReportUpdate)}</p>}
+            {publishedReports.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Published Updates Yet</h3>
+                <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
+              </div>
+            ) : publishedReports.map((r) => (
+              <div key={r.id} className="metric-card">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display font-bold text-sm">{r.report_date}</span>
+                    <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-sm text-muted-foreground">{r.weather ?? "—"}</p>
-                  <p className="text-sm text-muted-foreground">Workforce on site: {r.workforce_count}</p>
-                  {r.tasks_completed && r.tasks_completed.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold text-foreground mb-1">Work Completed</p>
-                      <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
-                        {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                      </ul>
-                    </div>
-                  )}
+                  {r.reviewed_at && <span className="text-xs text-muted-foreground">Published {fmt(r.reviewed_at)}</span>}
                 </div>
-              ))}
-            </div>
-          )
+                <p className="text-sm text-muted-foreground">{r.weather ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">Workforce on site: {r.workforce_count}</p>
+                {r.tasks_completed && r.tasks_completed.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">Work Completed</p>
+                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
+                      {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
 
         {activeTab === "photos" && (
-          <div className="metric-card text-center py-12">
-            <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">Photo gallery coming in the next iteration.</p>
+          <div className="space-y-3">
+            {lastMediaUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMediaUpdate)}</p>}
+            {publishedMedia.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Photos Published</h3>
+                <p className="text-sm text-muted-foreground mt-1">Site photos will appear once approved by the project manager.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {publishedMedia.map((f: any) => (
+                  <div key={f.id} className="metric-card p-2 space-y-2">
+                    {f.mime_type?.startsWith("image/") ? (
+                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer">
+                        <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
+                      </a>
+                    ) : (
+                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="aspect-square flex items-center justify-center bg-muted rounded-lg">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                      </a>
+                    )}
+                    {f.caption && <p className="text-xs truncate px-1">{f.caption}</p>}
+                    <p className="text-[10px] text-muted-foreground px-1">{fmt(f.created_at)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
