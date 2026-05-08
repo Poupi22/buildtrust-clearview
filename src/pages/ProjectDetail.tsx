@@ -161,23 +161,28 @@ export default function ProjectDetail() {
           </div>
           {milestones.length === 0 ? (
             <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
-          ) : milestones.map((m) => (
+          ) : milestones.map((m: any) => (
             <div key={m.id} className="metric-card">
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-semibold text-sm">{m.title}</span>
                     <StatusBadge status={m.status} />
-                    {m.is_published && <span className="text-xs text-primary">• Published</span>}
+                    <StatusBadge status={m.review_status ?? "draft"} />
+                    {m.is_published && <span className="text-xs text-primary">• Visible to client</span>}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Planned: {m.planned_date ?? "—"} {m.actual_date && `· Actual: ${m.actual_date}`}
                   </p>
+                  {m.review_comment && (
+                    <p className="text-xs text-muted-foreground mt-1 italic">Reviewer: "{m.review_comment}"</p>
+                  )}
                 </div>
                 <span className="text-lg font-display font-bold">{m.progress}%</span>
               </div>
               <Slider
                 value={[m.progress]}
+                disabled={m.review_status === "pending_review" || m.review_status === "approved"}
                 max={100}
                 step={5}
                 onValueChange={(v) => {
@@ -189,11 +194,32 @@ export default function ProjectDetail() {
                   });
                 }}
               />
-              <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline" onClick={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}>
-                  {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Publish</>}
-                </Button>
-                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => {
+              <div className="flex gap-2 mt-3 flex-wrap">
+                {(m.review_status === "draft" || m.review_status === "rejected") && (
+                  <Button size="sm" onClick={() => submitForReview.mutate({ id: m.id, project_id: project.id })}>
+                    Submit for review
+                  </Button>
+                )}
+                {m.review_status === "pending_review" && (
+                  <>
+                    <Button size="sm" onClick={() => {
+                      const c = prompt("Approval comment (optional)") ?? undefined;
+                      reviewMilestone.mutate({ id: m.id, project_id: project.id, decision: "approved", comment: c || undefined });
+                    }}>
+                      <CheckCircle2 className="h-3 w-3 mr-1" />Approve & publish
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => {
+                      const c = prompt("Reason for rejection") ?? undefined;
+                      reviewMilestone.mutate({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined });
+                    }}>Reject</Button>
+                  </>
+                )}
+                {m.review_status === "approved" && (
+                  <Button size="sm" variant="outline" onClick={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}>
+                    {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Republish</>}
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={() => {
                   if (confirm("Delete milestone?")) deleteMilestone.mutate({ id: m.id, project_id: project.id });
                 }}>Delete</Button>
               </div>
