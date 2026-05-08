@@ -391,3 +391,59 @@ export function useIsAdmin() {
   const { role } = useAuth();
   return role === "super-admin" || role === "company-admin";
 }
+
+// ---------------- Milestone review workflow ----------------
+export function useReviewMilestone() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      project_id: string;
+      decision: "approved" | "rejected";
+      comment?: string;
+    }) => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("milestones")
+        .update({
+          review_status: input.decision,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user.id,
+          review_comment: input.comment ?? null,
+        })
+        .eq("id", input.id);
+      if (error) throw error;
+      await supabase.from("approvals").insert({
+        project_id: input.project_id,
+        entity_type: "milestone",
+        entity_id: input.id,
+        decision: input.decision,
+        reviewer_id: user.id,
+        comment: input.comment ?? null,
+      });
+    },
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["milestones", v.project_id] });
+      qc.invalidateQueries({ queryKey: ["milestones", "all"] });
+      qc.invalidateQueries({ queryKey: ["approvals"] });
+    },
+  });
+}
+
+export function useSubmitMilestoneForReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; project_id: string }) => {
+      const { error } = await supabase
+        .from("milestones")
+        .update({ review_status: "pending_review", submitted_at: new Date().toISOString() })
+        .eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["milestones", v.project_id] });
+      qc.invalidateQueries({ queryKey: ["milestones", "all"] });
+    },
+  });
+}
