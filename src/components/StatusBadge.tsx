@@ -24,6 +24,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   manager: { label: "Manager", className: "status-approved" },
   engineer: { label: "Engineer", className: "status-submitted" },
   client: { label: "Client", className: "status-review" },
+  pending_review: { label: "Pending Review", className: "status-submitted" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
