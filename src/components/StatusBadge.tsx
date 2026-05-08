@@ -21,6 +21,9 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   medium: { label: "Medium", className: "status-review" },
   high: { label: "High", className: "status-rejected" },
   critical: { label: "Critical", className: "bg-destructive text-destructive-foreground" },
+  manager: { label: "Manager", className: "status-approved" },
+  engineer: { label: "Engineer", className: "status-submitted" },
+  client: { label: "Client", className: "status-review" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
