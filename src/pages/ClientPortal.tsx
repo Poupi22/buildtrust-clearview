@@ -204,46 +204,17 @@ export default function ClientPortal() {
             ))}
           </div>
         )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "milestones" && (
-          <div className="space-y-3">
-            {milestones.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No milestones published yet.</p>
-            ) : milestones.map((m) => (
-              <div key={m.id} className="metric-card">
-                <div className="flex items-center gap-4">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
-                    m.status === "completed" ? "bg-success/10 text-success" :
-                    m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-semibold text-sm">{m.title}</span>
-                      <StatusBadge status={m.status} />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
-                    </p>
-                    <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
-                  </div>
-                  <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {activeTab === "updates" && (
-          publishedReports.length === 0 ? (
-            <div className="metric-card text-center py-12">
-              <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <h3 className="font-display font-bold">No Published Updates Yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
+          <div className="space-y-3">
+            {lastReportUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastReportUpdate)}</p>}
+            {publishedReports.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Published Updates Yet</h3>
+                <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
+              </div>
+            ) : publishedReports.map((r) => (
             </div>
           ) : (
             <div className="space-y-3">
