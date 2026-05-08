@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { ReportStatus, MilestoneStatus, IssueSeverity, ProjectStatus } from "@/lib/mock-data";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   draft: { label: "Draft", className: "status-draft" },
@@ -14,6 +13,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   delayed: { label: "Delayed", className: "status-rejected" },
   active: { label: "Active", className: "status-approved" },
   "on-hold": { label: "On Hold", className: "status-review" },
+  planning: { label: "Planning", className: "status-draft" },
   open: { label: "Open", className: "status-rejected" },
   resolved: { label: "Resolved", className: "status-approved" },
   closed: { label: "Closed", className: "status-draft" },
