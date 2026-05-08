@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useFirstProject, useMilestones, useReports } from "@/hooks/useBuildTrust";
+import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl } from "@/hooks/useBuildTrust";
 import logo from "@/assets/logo.jpg";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos";
@@ -21,10 +21,26 @@ export default function ClientPortal() {
   const { data: project, isLoading } = useFirstProject();
   const { data: milestones = [] } = useMilestones(project?.id);
   const { data: reports = [] } = useReports(project?.id);
+  const { data: media = [] } = useMedia(project?.id);
 
-  // RLS already filters out unpublished/draft for client role, but be defensive:
+  // Defensive client-side filter; RLS already restricts.
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
-  const visibleMilestones = milestones.filter((m) => m.status === "completed" || m.status === "in-progress");
+  const publishedMilestones = milestones.filter((m: any) => m.is_published);
+  const publishedMedia = media.filter((f: any) => f.is_published);
+
+  const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString() : "—");
+  const lastMilestoneUpdate = publishedMilestones.reduce<string | null>(
+    (acc, m: any) => (!acc || (m.updated_at && m.updated_at > acc) ? m.updated_at : acc),
+    null,
+  );
+  const lastMediaUpdate = publishedMedia.reduce<string | null>(
+    (acc, f: any) => (!acc || (f.created_at && f.created_at > acc) ? f.created_at : acc),
+    null,
+  );
+  const lastReportUpdate = publishedReports.reduce<string | null>(
+    (acc, r: any) => (!acc || (r.reviewed_at && r.reviewed_at > acc) ? r.reviewed_at : acc),
+    null,
+  );
 
   const tabs: { key: PortalTab; label: string; icon: React.ElementType }[] = [
     { key: "overview", label: "Overview", icon: Building2 },
