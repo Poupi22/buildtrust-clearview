@@ -132,18 +132,21 @@ export default function ClientPortal() {
         {activeTab === "overview" && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <StatCard label="Milestones Done" value={milestones.filter((m) => m.status === "completed").length} total={milestones.length} icon={<CheckCircle2 className="h-5 w-5 text-success" />} />
-              <StatCard label="In Progress" value={milestones.filter((m) => m.status === "in-progress").length} icon={<Clock className="h-5 w-5 text-primary" />} />
+              <StatCard label="Milestones Done" value={publishedMilestones.filter((m) => m.status === "completed").length} total={publishedMilestones.length} icon={<CheckCircle2 className="h-5 w-5 text-success" />} />
+              <StatCard label="In Progress" value={publishedMilestones.filter((m) => m.status === "in-progress").length} icon={<Clock className="h-5 w-5 text-primary" />} />
               <StatCard label="Published Updates" value={publishedReports.length} icon={<FileText className="h-5 w-5 text-primary" />} />
-              <StatCard label="Site Photos" value={0} icon={<Camera className="h-5 w-5 text-accent" />} />
+              <StatCard label="Site Photos" value={publishedMedia.length} icon={<Camera className="h-5 w-5 text-accent" />} />
             </div>
             <div className="metric-card">
-              <h3 className="font-display font-bold mb-4">Milestone Progress</h3>
-              {visibleMilestones.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No milestone updates yet.</p>
+              <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+                <h3 className="font-display font-bold">Milestone Progress</h3>
+                {lastMilestoneUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMilestoneUpdate)}</p>}
+              </div>
+              {publishedMilestones.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No milestone updates published yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {visibleMilestones.map((m) => (
+                  {publishedMilestones.map((m) => (
                     <div key={m.id} className="flex items-center gap-3">
                       <div className={`h-3 w-3 rounded-full shrink-0 ${m.status === "completed" ? "bg-success" : "bg-primary animate-pulse"}`} />
                       <div className="flex-1 min-w-0">
@@ -151,13 +154,56 @@ export default function ClientPortal() {
                           <span className="text-sm font-medium truncate">{m.title}</span>
                           <StatusBadge status={m.status} />
                         </div>
-                        {m.actual_date && <p className="text-xs text-muted-foreground">Completed: {m.actual_date}</p>}
+                        <p className="text-xs text-muted-foreground">
+                          {m.actual_date ? `Completed: ${m.actual_date}` : `Updated: ${fmt(m.updated_at)}`}
+                        </p>
                       </div>
                       <span className="text-sm font-display font-bold shrink-0">{m.progress}%</span>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "milestones" && (
+          <div className="space-y-3">
+            {lastMilestoneUpdate && (
+              <p className="text-xs text-muted-foreground">Last updated {fmt(lastMilestoneUpdate)}</p>
+            )}
+            {publishedMilestones.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Milestones Published</h3>
+                <p className="text-sm text-muted-foreground mt-1">Milestones appear once your project manager publishes them.</p>
+              </div>
+            ) : publishedMilestones.map((m) => (
+              <div key={m.id} className="metric-card">
+                <div className="flex items-center gap-4">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
+                    m.status === "completed" ? "bg-success/10 text-success" :
+                    m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                  }`}>
+                    {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="font-semibold text-sm">{m.title}</span>
+                      <StatusBadge status={m.status} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
+                    <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+                  </div>
+                  <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
             </div>
           </div>
         )}
