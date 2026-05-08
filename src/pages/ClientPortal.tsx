@@ -8,10 +8,13 @@ import {
   Camera,
   FileText,
   Shield,
+  LogOut,
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl } from "@/hooks/useBuildTrust";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.jpg";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos";
@@ -21,6 +24,7 @@ export default function ClientPortal() {
   const { data: project, isLoading } = useFirstProject();
   const { data: milestones = [] } = useMilestones(project?.id);
   const { data: reports = [] } = useReports(project?.id);
+  const { signOut } = useAuth();
   const { data: media = [] } = useMedia(project?.id);
 
   // Defensive client-side filter; RLS already restricts.
@@ -77,9 +81,14 @@ export default function ClientPortal() {
               <p className="text-sm font-display font-bold">{project.client_name ?? "Client"}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Shield className="h-3.5 w-3.5 text-success" />
-            <span className="hidden sm:inline">Verified & Approved Updates Only</span>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="hidden sm:flex items-center gap-2">
+              <Shield className="h-3.5 w-3.5 text-success" />
+              <span>Verified & Approved Updates Only</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-3.5 w-3.5 mr-1" />Sign out
+            </Button>
           </div>
         </div>
       </header>
