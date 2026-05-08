@@ -248,7 +248,12 @@ export type Database = {
           planned_date: string | null
           progress: number
           project_id: string
+          review_comment: string | null
+          review_status: Database["public"]["Enums"]["milestone_review_status"]
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["milestone_status"]
+          submitted_at: string | null
           title: string
           updated_at: string
         }
@@ -261,7 +266,12 @@ export type Database = {
           planned_date?: string | null
           progress?: number
           project_id: string
+          review_comment?: string | null
+          review_status?: Database["public"]["Enums"]["milestone_review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
+          submitted_at?: string | null
           title: string
           updated_at?: string
         }
@@ -274,7 +284,12 @@ export type Database = {
           planned_date?: string | null
           progress?: number
           project_id?: string
+          review_comment?: string | null
+          review_status?: Database["public"]["Enums"]["milestone_review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
+          submitted_at?: string | null
           title?: string
           updated_at?: string
         }
@@ -520,6 +535,11 @@ export type Database = {
       approval_decision: "approved" | "rejected" | "revision-requested"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "open" | "in-progress" | "resolved" | "closed"
+      milestone_review_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
       milestone_status: "pending" | "in-progress" | "completed" | "delayed"
       project_member_role: "manager" | "engineer" | "client" | "viewer"
       project_status:
@@ -666,6 +686,12 @@ export const Constants = {
       approval_decision: ["approved", "rejected", "revision-requested"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["open", "in-progress", "resolved", "closed"],
+      milestone_review_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+      ],
       milestone_status: ["pending", "in-progress", "completed", "delayed"],
       project_member_role: ["manager", "engineer", "client", "viewer"],
       project_status: ["active", "on-hold", "completed", "delayed", "planning"],
