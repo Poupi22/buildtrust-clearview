@@ -196,21 +196,32 @@ export default function ProjectDetail() {
               />
               <div className="flex gap-2 mt-3 flex-wrap">
                 {(m.review_status === "draft" || m.review_status === "rejected") && (
-                  <Button size="sm" onClick={() => submitForReview.mutate({ id: m.id, project_id: project.id })}>
+                  <Button size="sm" disabled={submitForReview.isPending} onClick={async () => {
+                    try {
+                      await submitForReview.mutateAsync({ id: m.id, project_id: project.id });
+                      toast.success("Submitted for review");
+                    } catch (e: any) { toast.error(e.message ?? "Failed to submit"); }
+                  }}>
                     Submit for review
                   </Button>
                 )}
                 {m.review_status === "pending_review" && (
                   <>
-                    <Button size="sm" onClick={() => {
+                    <Button size="sm" onClick={async () => {
                       const c = prompt("Approval comment (optional)") ?? undefined;
-                      reviewMilestone.mutate({ id: m.id, project_id: project.id, decision: "approved", comment: c || undefined });
+                      try {
+                        await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "approved", comment: c || undefined });
+                        toast.success("Milestone approved & published");
+                      } catch (e: any) { toast.error(e.message ?? "Failed"); }
                     }}>
                       <CheckCircle2 className="h-3 w-3 mr-1" />Approve & publish
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => {
+                    <Button size="sm" variant="destructive" onClick={async () => {
                       const c = prompt("Reason for rejection") ?? undefined;
-                      reviewMilestone.mutate({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined });
+                      try {
+                        await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined });
+                        toast.success("Milestone rejected");
+                      } catch (e: any) { toast.error(e.message ?? "Failed"); }
                     }}>Reject</Button>
                   </>
                 )}
