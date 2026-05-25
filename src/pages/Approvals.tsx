@@ -39,6 +39,14 @@ export default function Approvals() {
     }
   };
 
+  const decideProgress = async (id: string, decision: "approved" | "rejected") => {
+    const comment = decision === "rejected" ? (prompt("Reason for rejection") ?? undefined) : undefined;
+    try {
+      await reviewProgress.mutateAsync({ id, decision, comment, publish: true });
+      toast.success(decision === "approved" ? "Progress approved & counted" : "Progress rejected");
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+  };
+
   return (
     <div className="space-y-6">
       <div>
