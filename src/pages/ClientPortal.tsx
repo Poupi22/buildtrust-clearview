@@ -13,7 +13,7 @@ import {
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl } from "@/hooks/useBuildTrust";
+import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.jpg";
 
@@ -26,11 +26,15 @@ export default function ClientPortal() {
   const { data: reports = [] } = useReports(project?.id);
   const { signOut } = useAuth();
   const { data: media = [] } = useMedia(project?.id);
+  const { data: subs = [] } = useSubMilestones(project?.id);
+  const { data: progress = [] } = useProgressReports({ projectId: project?.id });
 
   // Defensive client-side filter; RLS already restricts.
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
   const publishedMilestones = milestones.filter((m: any) => m.is_published && m.review_status === "approved");
   const publishedMedia = media.filter((f: any) => f.is_published);
+  const publishedSubs = subs.filter((s: any) => s.is_published || publishedMilestones.find((m: any) => m.id === s.milestone_id));
+  const publishedProgress = progress.filter((p: any) => p.status === "approved" && p.is_published);
 
   const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString() : "—");
   const lastMilestoneUpdate = publishedMilestones.reduce<string | null>(
@@ -187,37 +191,85 @@ export default function ClientPortal() {
                 <h3 className="font-display font-bold">No Milestones Published</h3>
                 <p className="text-sm text-muted-foreground mt-1">Milestones appear once your project manager publishes them.</p>
               </div>
-            ) : publishedMilestones.map((m) => (
-              <div key={m.id} className="metric-card">
-                <div className="flex items-center gap-4">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
-                    m.status === "completed" ? "bg-success/10 text-success" :
-                    m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-semibold text-sm">{m.title}</span>
-                      <StatusBadge status={m.status} />
+            ) : publishedMilestones.map((m) => {
+              const milestoneSubs = publishedSubs.filter((s: any) => s.milestone_id === m.id);
+              return (
+                <div key={m.id} className="metric-card">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
+                      m.status === "completed" ? "bg-success/10 text-success" :
+                      m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
-                    <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="font-semibold text-sm">{m.title}</span>
+                        <StatusBadge status={m.status} />
+                        <span className="text-xs text-muted-foreground">· {m.contribution_pct ?? 0}% of project</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
+                      <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+                    </div>
+                    <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
                   </div>
-                  <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
+                  {milestoneSubs.length > 0 && (
+                    <div className="mt-4 border-t pt-3 space-y-2">
+                      {milestoneSubs.map((s: any) => (
+                        <div key={s.id} className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium truncate">{s.title}</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {s.completed_quantity}/{s.target_quantity} {s.unit}
+                              </span>
+                            </div>
+                            <ProgressBar value={s.progress_pct} size="sm" className="mt-1" />
+                          </div>
+                          <span className="text-xs font-display font-bold shrink-0">{s.progress_pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {activeTab === "updates" && (
           <div className="space-y-3">
-            {lastReportUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastReportUpdate)}</p>}
-            {publishedReports.length === 0 ? (
+            {publishedProgress.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold mt-2">Work progress</h3>
+                {publishedProgress.map((p: any) => {
+                  const s = subs.find((x: any) => x.id === p.sub_milestone_id);
+                  return (
+                    <div key={p.id} className="metric-card">
+                      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{s?.title ?? "Progress update"}</span>
+                          <StatusBadge status="approved" />
+                        </div>
+                        <span className="text-sm font-display font-bold">
+                          +{p.quantity} {s?.unit ?? ""}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {p.report_date}{s && ` · ${s.completed_quantity}/${s.target_quantity} ${s.unit} total (${s.progress_pct}%)`}
+                      </p>
+                      {p.description && <p className="text-sm">{p.description}</p>}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
+            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Daily reports updated {fmt(lastReportUpdate)}</p>}
+            {publishedReports.length === 0 && publishedProgress.length === 0 ? (
               <div className="metric-card text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                 <h3 className="font-display font-bold">No Published Updates Yet</h3>
@@ -246,6 +298,7 @@ export default function ClientPortal() {
             ))}
           </div>
         )}
+
 
         {activeTab === "photos" && (
           <div className="space-y-3">

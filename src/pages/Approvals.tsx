@@ -1,18 +1,24 @@
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText } from "lucide-react";
-import { useReports, useReviewReport, useMilestones, useReviewMilestone } from "@/hooks/useBuildTrust";
+import { CheckSquare, Flag, FileText, ClipboardCheck } from "lucide-react";
+import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
   const { data: milestones = [] } = useMilestones();
+  const { data: progress = [] } = useProgressReports();
+  const { data: subs = [] } = useSubMilestones(undefined);
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
+  const reviewProgress = useReviewProgressReport();
 
   const pendingReports = reports.filter((r) => r.status === "submitted" || r.status === "under-review");
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
-  const totalPending = pendingReports.length + pendingMilestones.length;
+  const pendingProgress = progress.filter((p: any) => p.status === "submitted");
+  const totalPending = pendingReports.length + pendingMilestones.length + pendingProgress.length;
+
+  const subById = (id: string) => subs.find((s: any) => s.id === id);
 
   const decideReport = async (id: string, project_id: string, decision: "approved" | "rejected") => {
     try {
@@ -31,6 +37,14 @@ export default function Approvals() {
     } catch (err: any) {
       toast.error(err.message ?? "Failed");
     }
+  };
+
+  const decideProgress = async (id: string, decision: "approved" | "rejected") => {
+    const comment = decision === "rejected" ? (prompt("Reason for rejection") ?? undefined) : undefined;
+    try {
+      await reviewProgress.mutateAsync({ id, decision, comment, publish: true });
+      toast.success(decision === "approved" ? "Progress approved & counted" : "Progress rejected");
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
   };
 
   return (
@@ -82,6 +96,45 @@ export default function Approvals() {
               ))}
             </section>
           )}
+
+          {pendingProgress.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-primary" /> Progress Reports ({pendingProgress.length})
+              </h2>
+              {pendingProgress.map((p: any) => {
+                const s = subById(p.sub_milestone_id);
+                return (
+                  <div key={p.id} className="metric-card">
+                    <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{s?.title ?? "Sub-milestone"}</span>
+                        <StatusBadge status={p.status} />
+                      </div>
+                      <span className="text-sm font-display font-bold">
+                        +{p.quantity} {s?.unit ?? ""}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {p.report_date}{s && ` · Currently ${s.completed_quantity}/${s.target_quantity} ${s.unit} (${s.progress_pct}%)`}
+                    </p>
+                    {p.description && <p className="text-sm mb-3">{p.description}</p>}
+                    <div className="flex gap-2">
+                      <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
+                        onClick={() => decideProgress(p.id, "approved")} disabled={reviewProgress.isPending}>
+                        Approve & Count
+                      </Button>
+                      <Button variant="destructive" className="flex-1"
+                        onClick={() => decideProgress(p.id, "rejected")} disabled={reviewProgress.isPending}>
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
 
           {pendingReports.length > 0 && (
             <section className="space-y-3">

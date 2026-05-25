@@ -216,6 +216,198 @@ export function useCreateIssue() {
 }
 
 // ---------------- Milestone mutations ----------------
+// ---------------- Sub-milestones ----------------
+export function useSubMilestones(projectId?: string, milestoneId?: string) {
+  return useQuery({
+    queryKey: ["sub_milestones", projectId ?? "all", milestoneId ?? "all"],
+    enabled: projectId !== undefined ? !!projectId : true,
+    queryFn: async () => {
+      let q = supabase.from("sub_milestones" as any).select("*").order("ordering", { ascending: true });
+      if (projectId) q = q.eq("project_id", projectId);
+      if (milestoneId) q = q.eq("milestone_id", milestoneId);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+}
+
+export function useCreateSubMilestone() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (input: {
+      project_id: string;
+      milestone_id: string;
+      title: string;
+      unit: string;
+      target_quantity: number;
+      contribution_pct: number;
+      ordering?: number;
+    }) => {
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await (supabase.from("sub_milestones" as any).insert({
+        ...input,
+        created_by: user.id,
+        ordering: input.ordering ?? 0,
+      }).select().single() as any);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+      qc.invalidateQueries({ queryKey: ["milestones"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+export function useUpdateSubMilestone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; patch: Record<string, any> }) => {
+      const { error } = await (supabase.from("sub_milestones" as any).update(input.patch).eq("id", input.id) as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+      qc.invalidateQueries({ queryKey: ["milestones"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+export function useDeleteSubMilestone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase.from("sub_milestones" as any).delete().eq("id", id) as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+      qc.invalidateQueries({ queryKey: ["milestones"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+// ---------------- Progress reports ----------------
+export function useProgressReports(filters?: { projectId?: string; subMilestoneId?: string; mineOnly?: boolean }) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["progress_reports", filters?.projectId ?? "all", filters?.subMilestoneId ?? "all", filters?.mineOnly ? user?.id : "all"],
+    queryFn: async () => {
+      let q = supabase.from("progress_reports" as any).select("*").order("created_at", { ascending: false });
+      if (filters?.projectId) q = q.eq("project_id", filters.projectId);
+      if (filters?.subMilestoneId) q = q.eq("sub_milestone_id", filters.subMilestoneId);
+      if (filters?.mineOnly && user) q = q.eq("author_id", user.id);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+}
+
+export function useCreateProgressReport() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (input: {
+      project_id: string;
+      sub_milestone_id: string;
+      quantity: number;
+      description?: string;
+      report_date?: string;
+      photos?: File[];
+    }) => {
+      if (!user) throw new Error("Not authenticated");
+      const { data: report, error } = await (supabase.from("progress_reports" as any).insert({
+        project_id: input.project_id,
+        sub_milestone_id: input.sub_milestone_id,
+        quantity: input.quantity,
+        description: input.description,
+        report_date: input.report_date ?? new Date().toISOString().slice(0, 10),
+        author_id: user.id,
+        status: 'submitted',
+      }).select().single() as any);
+      if (error) throw error;
+      if (input.photos && input.photos.length) {
+        for (const file of input.photos) {
+          const ext = file.name.split(".").pop();
+          const path = `${input.project_id}/${crypto.randomUUID()}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("project-media").upload(path, file, { contentType: file.type });
+          if (upErr) throw upErr;
+          await supabase.from("media_files").insert({
+            project_id: input.project_id,
+            storage_path: path,
+            mime_type: file.type,
+            uploaded_by: user.id,
+            progress_report_id: report.id,
+          } as any);
+        }
+      }
+      return report;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["progress_reports"] });
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+      qc.invalidateQueries({ queryKey: ["milestones"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+      qc.invalidateQueries({ queryKey: ["media"] });
+    },
+  });
+}
+
+export function useReviewProgressReport() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (input: { id: string; decision: "approved" | "rejected"; comment?: string; publish?: boolean }) => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await (supabase.from("progress_reports" as any).update({
+        status: input.decision,
+        review_comment: input.comment ?? null,
+        reviewed_by: user.id,
+        reviewed_at: new Date().toISOString(),
+        is_published: input.decision === "approved" ? (input.publish ?? true) : false,
+      }).eq("id", input.id) as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["progress_reports"] });
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+      qc.invalidateQueries({ queryKey: ["milestones"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+export function usePublishProgressReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; is_published: boolean }) => {
+      const { error } = await (supabase.from("progress_reports" as any).update({ is_published: input.is_published }).eq("id", input.id) as any);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["progress_reports"] }),
+  });
+}
+
+export function useDeleteProgressReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase.from("progress_reports" as any).delete().eq("id", id) as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["progress_reports"] });
+      qc.invalidateQueries({ queryKey: ["sub_milestones"] });
+    },
+  });
+}
+
 export function useCreateMilestone() {
   const qc = useQueryClient();
   return useMutation({
@@ -224,6 +416,7 @@ export function useCreateMilestone() {
       title: string;
       planned_date?: string | null;
       ordering?: number;
+      contribution_pct?: number;
     }) => {
       const { data, error } = await supabase
         .from("milestones")
@@ -250,6 +443,9 @@ export function useUpdateMilestone() {
       status?: "pending" | "in-progress" | "completed" | "delayed";
       actual_date?: string | null;
       is_published?: boolean;
+      contribution_pct?: number;
+      title?: string;
+      planned_date?: string | null;
     }) => {
       const { id, project_id, ...patch } = input;
       const { error } = await supabase.from("milestones").update(patch).eq("id", id);
