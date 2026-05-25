@@ -220,7 +220,7 @@ export function useCreateIssue() {
 export function useSubMilestones(projectId?: string, milestoneId?: string) {
   return useQuery({
     queryKey: ["sub_milestones", projectId ?? "all", milestoneId ?? "all"],
-    enabled: !!projectId,
+    enabled: projectId !== undefined ? !!projectId : true,
     queryFn: async () => {
       let q = supabase.from("sub_milestones" as any).select("*").order("ordering", { ascending: true });
       if (projectId) q = q.eq("project_id", projectId);
