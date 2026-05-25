@@ -242,8 +242,34 @@ export default function ClientPortal() {
 
         {activeTab === "updates" && (
           <div className="space-y-3">
-            {lastReportUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastReportUpdate)}</p>}
-            {publishedReports.length === 0 ? (
+            {publishedProgress.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold mt-2">Work progress</h3>
+                {publishedProgress.map((p: any) => {
+                  const s = subs.find((x: any) => x.id === p.sub_milestone_id);
+                  return (
+                    <div key={p.id} className="metric-card">
+                      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{s?.title ?? "Progress update"}</span>
+                          <StatusBadge status="approved" />
+                        </div>
+                        <span className="text-sm font-display font-bold">
+                          +{p.quantity} {s?.unit ?? ""}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {p.report_date}{s && ` · ${s.completed_quantity}/${s.target_quantity} ${s.unit} total (${s.progress_pct}%)`}
+                      </p>
+                      {p.description && <p className="text-sm">{p.description}</p>}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
+            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Daily reports updated {fmt(lastReportUpdate)}</p>}
+            {publishedReports.length === 0 && publishedProgress.length === 0 ? (
               <div className="metric-card text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                 <h3 className="font-display font-bold">No Published Updates Yet</h3>
@@ -272,6 +298,7 @@ export default function ClientPortal() {
             ))}
           </div>
         )}
+
 
         {activeTab === "photos" && (
           <div className="space-y-3">
