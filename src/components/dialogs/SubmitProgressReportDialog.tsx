@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateProgressReport } from "@/hooks/useBuildTrust";
+import { useCreateProgressReport, useProgressReports } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
@@ -17,12 +17,22 @@ export function SubmitProgressReportDialog({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [photos, setPhotos] = useState<File[]>([]);
   const create = useCreateProgressReport();
+  const { data: reports = [] } = useProgressReports({ subMilestoneId: sub.id });
 
-  const remainingQty = Math.max(0, Number(sub.target_quantity) - Number(sub.completed_quantity));
-  const completed = sub.progress_pct >= 100;
+  const pendingQty = reports
+    .filter((r: any) => r.status === "submitted")
+    .reduce((s: number, r: any) => s + Number(r.quantity || 0), 0);
+  const approvedQty = Number(sub.completed_quantity || 0);
+  const target = Number(sub.target_quantity);
+  const remainingQty = Math.max(0, +(target - approvedQty - pendingQty).toFixed(4));
+  const completed = sub.progress_pct >= 100 || remainingQty <= 0;
 
   const submit = async () => {
     if (!(quantity > 0)) { toast.error("Quantity must be > 0"); return; }
+    if (quantity > remainingQty + 0.0001) {
+      toast.error(`Only ${remainingQty} ${sub.unit} remaining to report`);
+      return;
+    }
     try {
       await create.mutateAsync({
         project_id: projectId,
@@ -51,9 +61,12 @@ export function SubmitProgressReportDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="rounded-lg bg-muted/50 p-3 text-xs space-y-0.5">
-            <p>Target: <span className="font-semibold">{sub.target_quantity} {sub.unit}</span></p>
-            <p>Completed: <span className="font-semibold">{sub.completed_quantity} {sub.unit}</span> ({sub.progress_pct}%)</p>
-            <p>Remaining: <span className="font-semibold">{remainingQty} {sub.unit}</span></p>
+            <p>Target: <span className="font-semibold">{target} {sub.unit}</span></p>
+            <p>Approved: <span className="font-semibold">{approvedQty} {sub.unit}</span> ({sub.progress_pct}%)</p>
+            {pendingQty > 0 && (
+              <p>Pending review: <span className="font-semibold">{pendingQty} {sub.unit}</span></p>
+            )}
+            <p>Remaining to report: <span className="font-semibold text-primary">{remainingQty} {sub.unit}</span></p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -61,9 +74,12 @@ export function SubmitProgressReportDialog({
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div>
-              <Label>Quantity ({sub.unit})</Label>
-              <Input type="number" min={0} step={0.01} value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))} />
+              <Label>Quantity ({sub.unit}) · max {remainingQty}</Label>
+              <Input type="number" min={0} max={remainingQty} step={0.01} value={quantity}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setQuantity(v > remainingQty ? remainingQty : v);
+                }} />
             </div>
           </div>
           <div>
