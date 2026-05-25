@@ -279,3 +279,95 @@ export default function ProjectDetail() {
     </div>
   );
 }
+
+function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, onTogglePublish, onDelete }: {
+  m: any; projectId: string;
+  onSubmitForReview: () => void; onApprove: () => void; onReject: () => void;
+  onTogglePublish: () => void; onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const { data: subs = [] } = useSubMilestones(projectId, m.id);
+  const delSub = useDeleteSubMilestone();
+  const subContribTotal = subs.reduce((s, x: any) => s + Number(x.contribution_pct ?? 0), 0);
+
+  return (
+    <div className="metric-card">
+      <div className="flex items-center gap-3 mb-2">
+        <button onClick={() => setOpen(!open)} className="p-1 hover:bg-muted rounded">
+          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="font-semibold text-sm">{m.title}</span>
+            <StatusBadge status={m.status} />
+            <StatusBadge status={m.review_status ?? "draft"} />
+            {m.is_published && <span className="text-xs text-primary">• Visible to client</span>}
+            <span className="text-xs text-muted-foreground">· {m.contribution_pct ?? 0}% of project</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Planned: {m.planned_date ?? "—"} {m.actual_date && `· Actual: ${m.actual_date}`}
+          </p>
+          {m.review_comment && <p className="text-xs text-muted-foreground mt-1 italic">Reviewer: "{m.review_comment}"</p>}
+        </div>
+        <div className="text-right">
+          <span className="text-lg font-display font-bold">{m.progress}%</span>
+        </div>
+      </div>
+      <ProgressBar value={m.progress} size="sm" />
+
+      {open && (
+        <div className="mt-4 border-t pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold uppercase text-muted-foreground">
+              Sub-milestones · {subContribTotal}% of milestone allocated
+            </h4>
+            <NewSubMilestoneDialog projectId={projectId} milestoneId={m.id} />
+          </div>
+          {subs.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No sub-milestones yet. Add the first work package.</p>
+          ) : subs.map((s: any) => (
+            <div key={s.id} className="rounded-lg border p-3 bg-muted/30">
+              <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium truncate">{s.title}</span>
+                  <StatusBadge status={s.status} />
+                  <span className="text-xs text-muted-foreground">· {s.contribution_pct}% of milestone</span>
+                </div>
+                <span className="text-sm font-display font-bold">{s.progress_pct}%</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                {s.completed_quantity} / {s.target_quantity} {s.unit}
+              </p>
+              <ProgressBar value={s.progress_pct} size="sm" />
+              <div className="flex gap-2 mt-2">
+                <SubmitProgressReportDialog projectId={projectId} sub={s} />
+                <Button size="sm" variant="ghost" className="text-destructive ml-auto"
+                  onClick={() => { if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id); }}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-3 flex-wrap border-t pt-3">
+        {(m.review_status === "draft" || m.review_status === "rejected") && (
+          <Button size="sm" onClick={onSubmitForReview}>Submit for review</Button>
+        )}
+        {m.review_status === "pending_review" && (
+          <>
+            <Button size="sm" onClick={onApprove}><CheckCircle2 className="h-3 w-3 mr-1" />Approve & publish</Button>
+            <Button size="sm" variant="destructive" onClick={onReject}>Reject</Button>
+          </>
+        )}
+        {m.review_status === "approved" && (
+          <Button size="sm" variant="outline" onClick={onTogglePublish}>
+            {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Republish</>}
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>Delete milestone</Button>
+      </div>
+    </div>
+  );
+}
