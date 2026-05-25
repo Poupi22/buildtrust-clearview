@@ -16,6 +16,7 @@ import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
 import { NewSubMilestoneDialog } from "@/components/dialogs/NewSubMilestoneDialog";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
+import { MilestoneCsvIO } from "@/components/MilestoneCsvIO";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -25,6 +26,7 @@ export default function ProjectDetail() {
   const { id } = useParams();
   const { data: project, isLoading } = useProject(id);
   const { data: milestones = [] } = useMilestones(id);
+  const { data: allSubs = [] } = useSubMilestones(id);
   const { data: reports = [] } = useReports(id);
   const { data: issues = [] } = useIssues(id);
   const { data: media = [] } = useMedia(id);
@@ -159,7 +161,13 @@ export default function ProjectDetail() {
 
       {activeTab === "milestones" && (
         <div className="space-y-3">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2 flex-wrap">
+            <MilestoneCsvIO
+              projectId={project.id}
+              projectCode={project.code}
+              milestones={milestones}
+              getSubs={(mid) => (allSubs as any[]).filter((s) => s.milestone_id === mid)}
+            />
             <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
           </div>
           {milestones.length === 0 ? (
