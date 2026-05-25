@@ -97,6 +97,45 @@ export default function Approvals() {
             </section>
           )}
 
+          {pendingProgress.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-primary" /> Progress Reports ({pendingProgress.length})
+              </h2>
+              {pendingProgress.map((p: any) => {
+                const s = subById(p.sub_milestone_id);
+                return (
+                  <div key={p.id} className="metric-card">
+                    <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{s?.title ?? "Sub-milestone"}</span>
+                        <StatusBadge status={p.status} />
+                      </div>
+                      <span className="text-sm font-display font-bold">
+                        +{p.quantity} {s?.unit ?? ""}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {p.report_date}{s && ` · Currently ${s.completed_quantity}/${s.target_quantity} ${s.unit} (${s.progress_pct}%)`}
+                    </p>
+                    {p.description && <p className="text-sm mb-3">{p.description}</p>}
+                    <div className="flex gap-2">
+                      <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
+                        onClick={() => decideProgress(p.id, "approved")} disabled={reviewProgress.isPending}>
+                        Approve & Count
+                      </Button>
+                      <Button variant="destructive" className="flex-1"
+                        onClick={() => decideProgress(p.id, "rejected")} disabled={reviewProgress.isPending}>
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+
           {pendingReports.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold flex items-center gap-2">
