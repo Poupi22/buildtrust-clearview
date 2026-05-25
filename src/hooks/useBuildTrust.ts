@@ -443,6 +443,9 @@ export function useUpdateMilestone() {
       status?: "pending" | "in-progress" | "completed" | "delayed";
       actual_date?: string | null;
       is_published?: boolean;
+      contribution_pct?: number;
+      title?: string;
+      planned_date?: string | null;
     }) => {
       const { id, project_id, ...patch } = input;
       const { error } = await supabase.from("milestones").update(patch).eq("id", id);
