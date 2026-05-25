@@ -183,6 +183,7 @@ export type Database = {
           is_published: boolean
           milestone_id: string | null
           mime_type: string | null
+          progress_report_id: string | null
           project_id: string
           report_id: string | null
           storage_path: string
@@ -196,6 +197,7 @@ export type Database = {
           is_published?: boolean
           milestone_id?: string | null
           mime_type?: string | null
+          progress_report_id?: string | null
           project_id: string
           report_id?: string | null
           storage_path: string
@@ -209,6 +211,7 @@ export type Database = {
           is_published?: boolean
           milestone_id?: string | null
           mime_type?: string | null
+          progress_report_id?: string | null
           project_id?: string
           report_id?: string | null
           storage_path?: string
@@ -241,6 +244,7 @@ export type Database = {
       milestones: {
         Row: {
           actual_date: string | null
+          contribution_pct: number
           created_at: string
           id: string
           is_published: boolean
@@ -259,6 +263,7 @@ export type Database = {
         }
         Insert: {
           actual_date?: string | null
+          contribution_pct?: number
           created_at?: string
           id?: string
           is_published?: boolean
@@ -277,6 +282,7 @@ export type Database = {
         }
         Update: {
           actual_date?: string | null
+          contribution_pct?: number
           created_at?: string
           id?: string
           is_published?: boolean
@@ -330,6 +336,57 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      progress_reports: {
+        Row: {
+          author_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          project_id: string
+          quantity: number
+          report_date: string
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["progress_report_status"]
+          sub_milestone_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          project_id: string
+          quantity: number
+          report_date?: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["progress_report_status"]
+          sub_milestone_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          project_id?: string
+          quantity?: number
+          report_date?: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["progress_report_status"]
+          sub_milestone_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -490,6 +547,60 @@ export type Database = {
           },
         ]
       }
+      sub_milestones: {
+        Row: {
+          completed_quantity: number
+          contribution_pct: number
+          created_at: string
+          created_by: string
+          id: string
+          is_published: boolean
+          milestone_id: string
+          ordering: number
+          progress_pct: number
+          project_id: string
+          status: string
+          target_quantity: number
+          title: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          completed_quantity?: number
+          contribution_pct?: number
+          created_at?: string
+          created_by: string
+          id?: string
+          is_published?: boolean
+          milestone_id: string
+          ordering?: number
+          progress_pct?: number
+          project_id: string
+          status?: string
+          target_quantity: number
+          title: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_quantity?: number
+          contribution_pct?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_published?: boolean
+          milestone_id?: string
+          ordering?: number
+          progress_pct?: number
+          project_id?: string
+          status?: string
+          target_quantity?: number
+          title?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -529,6 +640,9 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["project_member_role"]
       }
+      recalc_milestone: { Args: { _m: string }; Returns: undefined }
+      recalc_project: { Args: { _p: string }; Returns: undefined }
+      recalc_sub_milestone: { Args: { _sub: string }; Returns: undefined }
     }
     Enums: {
       app_role: "super-admin" | "company-admin" | "engineer" | "client"
@@ -541,6 +655,7 @@ export type Database = {
         | "approved"
         | "rejected"
       milestone_status: "pending" | "in-progress" | "completed" | "delayed"
+      progress_report_status: "submitted" | "approved" | "rejected"
       project_member_role: "manager" | "engineer" | "client" | "viewer"
       project_status:
         | "active"
@@ -693,6 +808,7 @@ export const Constants = {
         "rejected",
       ],
       milestone_status: ["pending", "in-progress", "completed", "delayed"],
+      progress_report_status: ["submitted", "approved", "rejected"],
       project_member_role: ["manager", "engineer", "client", "viewer"],
       project_status: ["active", "on-hold", "completed", "delayed", "planning"],
       report_status: [
