@@ -191,30 +191,52 @@ export default function ClientPortal() {
                 <h3 className="font-display font-bold">No Milestones Published</h3>
                 <p className="text-sm text-muted-foreground mt-1">Milestones appear once your project manager publishes them.</p>
               </div>
-            ) : publishedMilestones.map((m) => (
-              <div key={m.id} className="metric-card">
-                <div className="flex items-center gap-4">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
-                    m.status === "completed" ? "bg-success/10 text-success" :
-                    m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-semibold text-sm">{m.title}</span>
-                      <StatusBadge status={m.status} />
+            ) : publishedMilestones.map((m) => {
+              const milestoneSubs = publishedSubs.filter((s: any) => s.milestone_id === m.id);
+              return (
+                <div key={m.id} className="metric-card">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
+                      m.status === "completed" ? "bg-success/10 text-success" :
+                      m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
-                    <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="font-semibold text-sm">{m.title}</span>
+                        <StatusBadge status={m.status} />
+                        <span className="text-xs text-muted-foreground">· {m.contribution_pct ?? 0}% of project</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
+                      <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+                    </div>
+                    <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
                   </div>
-                  <span className="text-lg font-display font-bold shrink-0">{m.progress}%</span>
+                  {milestoneSubs.length > 0 && (
+                    <div className="mt-4 border-t pt-3 space-y-2">
+                      {milestoneSubs.map((s: any) => (
+                        <div key={s.id} className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium truncate">{s.title}</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {s.completed_quantity}/{s.target_quantity} {s.unit}
+                              </span>
+                            </div>
+                            <ProgressBar value={s.progress_pct} size="sm" className="mt-1" />
+                          </div>
+                          <span className="text-xs font-display font-bold shrink-0">{s.progress_pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
