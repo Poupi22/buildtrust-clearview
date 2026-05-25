@@ -8,6 +8,7 @@ import {
   useUpdateMilestone, useDeleteMilestone, useToggleMediaPublish, getMediaUrl,
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
+  useProgressReports, useReviewProgressReport, useDeleteProgressReport,
 } from "@/hooks/useBuildTrust";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
