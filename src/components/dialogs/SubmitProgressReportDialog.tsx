@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,9 @@ export function SubmitProgressReportDialog({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [photos, setPhotos] = useState<File[]>([]);
   const create = useCreateProgressReport();
-  const { data: reports = [] } = useProgressReports({ subMilestoneId: sub.id });
+  const { data: reports = [], refetch } = useProgressReports({ subMilestoneId: sub.id });
+
+  useEffect(() => { if (open) refetch(); }, [open, refetch]);
 
   const pendingQty = reports
     .filter((r: any) => r.status === "submitted")
