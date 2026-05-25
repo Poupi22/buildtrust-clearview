@@ -164,79 +164,27 @@ export default function ProjectDetail() {
           {milestones.length === 0 ? (
             <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
           ) : milestones.map((m: any) => (
-            <div key={m.id} className="metric-card">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-semibold text-sm">{m.title}</span>
-                    <StatusBadge status={m.status} />
-                    <StatusBadge status={m.review_status ?? "draft"} />
-                    {m.is_published && <span className="text-xs text-primary">• Visible to client</span>}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Planned: {m.planned_date ?? "—"} {m.actual_date && `· Actual: ${m.actual_date}`}
-                  </p>
-                  {m.review_comment && (
-                    <p className="text-xs text-muted-foreground mt-1 italic">Reviewer: "{m.review_comment}"</p>
-                  )}
-                </div>
-                <span className="text-lg font-display font-bold">{m.progress}%</span>
-              </div>
-              <Slider
-                value={[m.progress]}
-                disabled={m.review_status === "pending_review" || m.review_status === "approved"}
-                max={100}
-                step={5}
-                onValueChange={(v) => {
-                  const progress = v[0];
-                  const status = progress >= 100 ? "completed" : progress > 0 ? "in-progress" : "pending";
-                  updateMilestone.mutate({
-                    id: m.id, project_id: project.id, progress, status: status as any,
-                    actual_date: progress >= 100 ? new Date().toISOString().slice(0, 10) : null,
-                  });
-                }}
-              />
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {(m.review_status === "draft" || m.review_status === "rejected") && (
-                  <Button size="sm" disabled={submitForReview.isPending} onClick={async () => {
-                    try {
-                      await submitForReview.mutateAsync({ id: m.id, project_id: project.id });
-                      toast.success("Submitted for review");
-                    } catch (e: any) { toast.error(e.message ?? "Failed to submit"); }
-                  }}>
-                    Submit for review
-                  </Button>
-                )}
-                {m.review_status === "pending_review" && (
-                  <>
-                    <Button size="sm" onClick={async () => {
-                      const c = prompt("Approval comment (optional)") ?? undefined;
-                      try {
-                        await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "approved", comment: c || undefined });
-                        toast.success("Milestone approved & published");
-                      } catch (e: any) { toast.error(e.message ?? "Failed"); }
-                    }}>
-                      <CheckCircle2 className="h-3 w-3 mr-1" />Approve & publish
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={async () => {
-                      const c = prompt("Reason for rejection") ?? undefined;
-                      try {
-                        await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined });
-                        toast.success("Milestone rejected");
-                      } catch (e: any) { toast.error(e.message ?? "Failed"); }
-                    }}>Reject</Button>
-                  </>
-                )}
-                {m.review_status === "approved" && (
-                  <Button size="sm" variant="outline" onClick={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}>
-                    {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Republish</>}
-                  </Button>
-                )}
-                <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={() => {
-                  if (confirm("Delete milestone?")) deleteMilestone.mutate({ id: m.id, project_id: project.id });
-                }}>Delete</Button>
-              </div>
-            </div>
+            <MilestoneCard
+              key={m.id}
+              m={m}
+              projectId={project.id}
+              onSubmitForReview={async () => {
+                try { await submitForReview.mutateAsync({ id: m.id, project_id: project.id }); toast.success("Submitted for review"); }
+                catch (e: any) { toast.error(e.message ?? "Failed"); }
+              }}
+              onApprove={async () => {
+                const c = prompt("Approval comment (optional)") ?? undefined;
+                try { await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "approved", comment: c || undefined }); toast.success("Milestone approved & published"); }
+                catch (e: any) { toast.error(e.message ?? "Failed"); }
+              }}
+              onReject={async () => {
+                const c = prompt("Reason for rejection") ?? undefined;
+                try { await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined }); toast.success("Milestone rejected"); }
+                catch (e: any) { toast.error(e.message ?? "Failed"); }
+              }}
+              onTogglePublish={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}
+              onDelete={() => { if (confirm("Delete milestone?")) deleteMilestone.mutate({ id: m.id, project_id: project.id }); }}
+            />
           ))}
         </div>
       )}
