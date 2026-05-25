@@ -26,11 +26,15 @@ export default function ClientPortal() {
   const { data: reports = [] } = useReports(project?.id);
   const { signOut } = useAuth();
   const { data: media = [] } = useMedia(project?.id);
+  const { data: subs = [] } = useSubMilestones(project?.id);
+  const { data: progress = [] } = useProgressReports({ projectId: project?.id });
 
   // Defensive client-side filter; RLS already restricts.
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
   const publishedMilestones = milestones.filter((m: any) => m.is_published && m.review_status === "approved");
   const publishedMedia = media.filter((f: any) => f.is_published);
+  const publishedSubs = subs.filter((s: any) => s.is_published || publishedMilestones.find((m: any) => m.id === s.milestone_id));
+  const publishedProgress = progress.filter((p: any) => p.status === "approved" && p.is_published);
 
   const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString() : "—");
   const lastMilestoneUpdate = publishedMilestones.reduce<string | null>(
