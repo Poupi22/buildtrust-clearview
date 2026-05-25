@@ -327,27 +327,9 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
           {subs.length === 0 ? (
             <p className="text-xs text-muted-foreground">No sub-milestones yet. Add the first work package.</p>
           ) : subs.map((s: any) => (
-            <div key={s.id} className="rounded-lg border p-3 bg-muted/30">
-              <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium truncate">{s.title}</span>
-                  <StatusBadge status={s.status} />
-                  <span className="text-xs text-muted-foreground">· {s.contribution_pct}% of milestone</span>
-                </div>
-                <span className="text-sm font-display font-bold">{s.progress_pct}%</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-2">
-                {s.completed_quantity} / {s.target_quantity} {s.unit}
-              </p>
-              <ProgressBar value={s.progress_pct} size="sm" />
-              <div className="flex gap-2 mt-2">
-                <SubmitProgressReportDialog projectId={projectId} sub={s} />
-                <Button size="sm" variant="ghost" className="text-destructive ml-auto"
-                  onClick={() => { if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id); }}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+            <SubMilestoneRow key={s.id} s={s} projectId={projectId} onDelete={() => {
+              if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id);
+            }} />
           ))}
         </div>
       )}
