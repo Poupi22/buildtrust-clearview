@@ -26,6 +26,7 @@ export default function ProjectDetail() {
   const { id } = useParams();
   const { data: project, isLoading } = useProject(id);
   const { data: milestones = [] } = useMilestones(id);
+  const { data: allSubs = [] } = useSubMilestones(id);
   const { data: reports = [] } = useReports(id);
   const { data: issues = [] } = useIssues(id);
   const { data: media = [] } = useMedia(id);
