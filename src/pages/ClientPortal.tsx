@@ -13,7 +13,7 @@ import {
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl } from "@/hooks/useBuildTrust";
+import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.jpg";
 
