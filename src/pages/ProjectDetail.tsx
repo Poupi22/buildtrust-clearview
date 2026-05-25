@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { useState } from "react";
@@ -7,13 +7,15 @@ import {
   useProject, useMilestones, useReports, useIssues, useMedia,
   useUpdateMilestone, useDeleteMilestone, useToggleMediaPublish, getMediaUrl,
   useSubmitMilestoneForReview, useReviewMilestone,
+  useSubMilestones, useDeleteSubMilestone,
 } from "@/hooks/useBuildTrust";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
 import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
+import { NewSubMilestoneDialog } from "@/components/dialogs/NewSubMilestoneDialog";
+import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 
 type Tab = "overview" | "milestones" | "reports" | "issues" | "photos";
