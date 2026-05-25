@@ -1,18 +1,24 @@
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText } from "lucide-react";
-import { useReports, useReviewReport, useMilestones, useReviewMilestone } from "@/hooks/useBuildTrust";
+import { CheckSquare, Flag, FileText, ClipboardCheck } from "lucide-react";
+import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
   const { data: milestones = [] } = useMilestones();
+  const { data: progress = [] } = useProgressReports();
+  const { data: subs = [] } = useSubMilestones(undefined);
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
+  const reviewProgress = useReviewProgressReport();
 
   const pendingReports = reports.filter((r) => r.status === "submitted" || r.status === "under-review");
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
-  const totalPending = pendingReports.length + pendingMilestones.length;
+  const pendingProgress = progress.filter((p: any) => p.status === "submitted");
+  const totalPending = pendingReports.length + pendingMilestones.length + pendingProgress.length;
+
+  const subById = (id: string) => subs.find((s: any) => s.id === id);
 
   const decideReport = async (id: string, project_id: string, decision: "approved" | "rejected") => {
     try {
