@@ -416,6 +416,7 @@ export function useCreateMilestone() {
       title: string;
       planned_date?: string | null;
       ordering?: number;
+      contribution_pct?: number;
     }) => {
       const { data, error } = await supabase
         .from("milestones")
