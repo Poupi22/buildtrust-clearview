@@ -8,6 +8,7 @@ import {
   useUpdateMilestone, useDeleteMilestone, useToggleMediaPublish, getMediaUrl,
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
+  useProgressReports, useReviewProgressReport, useDeleteProgressReport,
 } from "@/hooks/useBuildTrust";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
@@ -326,27 +327,9 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
           {subs.length === 0 ? (
             <p className="text-xs text-muted-foreground">No sub-milestones yet. Add the first work package.</p>
           ) : subs.map((s: any) => (
-            <div key={s.id} className="rounded-lg border p-3 bg-muted/30">
-              <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium truncate">{s.title}</span>
-                  <StatusBadge status={s.status} />
-                  <span className="text-xs text-muted-foreground">· {s.contribution_pct}% of milestone</span>
-                </div>
-                <span className="text-sm font-display font-bold">{s.progress_pct}%</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-2">
-                {s.completed_quantity} / {s.target_quantity} {s.unit}
-              </p>
-              <ProgressBar value={s.progress_pct} size="sm" />
-              <div className="flex gap-2 mt-2">
-                <SubmitProgressReportDialog projectId={projectId} sub={s} />
-                <Button size="sm" variant="ghost" className="text-destructive ml-auto"
-                  onClick={() => { if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id); }}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+            <SubMilestoneRow key={s.id} s={s} projectId={projectId} onDelete={() => {
+              if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id);
+            }} />
           ))}
         </div>
       )}
@@ -368,6 +351,84 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
         )}
         <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>Delete milestone</Button>
       </div>
+    </div>
+  );
+}
+
+function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string; onDelete: () => void }) {
+  const [showReports, setShowReports] = useState(false);
+  const { data: reports = [] } = useProgressReports({ projectId, subMilestoneId: s.id });
+  const review = useReviewProgressReport();
+  const delReport = useDeleteProgressReport();
+  const pending = reports.filter((r: any) => r.status === "submitted").length;
+
+  const decide = async (id: string, decision: "approved" | "rejected") => {
+    const comment = decision === "rejected" ? (prompt("Reason for rejection") ?? undefined) : undefined;
+    try {
+      await review.mutateAsync({ id, decision, comment, publish: true });
+      toast.success(decision === "approved" ? "Approved · progress updated" : "Rejected");
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+  };
+
+  return (
+    <div className="rounded-lg border p-3 bg-muted/30">
+      <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm font-medium truncate">{s.title}</span>
+          <StatusBadge status={s.status} />
+          <span className="text-xs text-muted-foreground">· {s.contribution_pct}% of milestone</span>
+        </div>
+        <span className="text-sm font-display font-bold">{s.progress_pct}%</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-2">
+        {s.completed_quantity} / {s.target_quantity} {s.unit}
+      </p>
+      <ProgressBar value={s.progress_pct} size="sm" />
+      <div className="flex gap-2 mt-2 flex-wrap items-center">
+        <SubmitProgressReportDialog projectId={projectId} sub={s} />
+        <Button size="sm" variant="outline" onClick={() => setShowReports(!showReports)}>
+          {showReports ? <ChevronDown className="h-3 w-3 mr-1" /> : <ChevronRight className="h-3 w-3 mr-1" />}
+          Reports ({reports.length}){pending > 0 && <span className="ml-1 text-primary">· {pending} pending</span>}
+        </Button>
+        <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+
+      {showReports && (
+        <div className="mt-3 space-y-2">
+          {reports.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No progress reports yet.</p>
+          ) : reports.map((r: any) => (
+            <div key={r.id} className="rounded-md border bg-background p-2 text-xs space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <StatusBadge status={r.status} />
+                <span className="font-medium">{r.quantity} {s.unit}</span>
+                <span className="text-muted-foreground">· {r.report_date}</span>
+                {r.is_published && <span className="text-primary">· visible to client</span>}
+              </div>
+              {r.description && <p className="text-muted-foreground">{r.description}</p>}
+              {r.review_comment && <p className="italic text-muted-foreground">Reviewer: "{r.review_comment}"</p>}
+              {r.status === "submitted" && (
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" className="h-7" onClick={() => decide(r.id, "approved")} disabled={review.isPending}>
+                    <CheckCircle2 className="h-3 w-3 mr-1" />Approve & count
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7" onClick={() => decide(r.id, "rejected")} disabled={review.isPending}>
+                    Reject
+                  </Button>
+                </div>
+              )}
+              {r.status === "rejected" && (
+                <Button size="sm" variant="ghost" className="h-7 text-destructive"
+                  onClick={() => { if (confirm("Delete this rejected report?")) delReport.mutate(r.id); }}>
+                  <Trash2 className="h-3 w-3 mr-1" />Delete
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
