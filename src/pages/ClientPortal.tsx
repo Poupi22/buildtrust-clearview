@@ -15,6 +15,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
+import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos";
