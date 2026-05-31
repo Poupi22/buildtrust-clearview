@@ -344,10 +344,7 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <div className="text-2xl font-display font-bold tabular-nums leading-none">{m.progress}%</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">complete</div>
-            </div>
+            <CircularProgress value={m.progress} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" variant="ghost" className="h-8 w-8">
@@ -383,10 +380,8 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
             </DropdownMenu>
           </div>
         </div>
-        <div className="mt-3 ml-6">
-          <ProgressBar value={m.progress} size="sm" />
-        </div>
       </div>
+
 
       {/* Sub-milestones */}
       {open && (
