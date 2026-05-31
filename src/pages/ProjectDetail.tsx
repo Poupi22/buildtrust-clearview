@@ -20,6 +20,7 @@ import { NewSubMilestoneDialog } from "@/components/dialogs/NewSubMilestoneDialo
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
 import { MilestoneCsvIO } from "@/components/MilestoneCsvIO";
+import { InviteClientDialog } from "@/components/dialogs/InviteClientDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
