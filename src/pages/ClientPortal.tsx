@@ -15,6 +15,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
+import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos";
@@ -303,31 +304,12 @@ export default function ClientPortal() {
         {activeTab === "photos" && (
           <div className="space-y-3">
             {lastMediaUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMediaUpdate)}</p>}
-            {publishedMedia.length === 0 ? (
-              <div className="metric-card text-center py-12">
-                <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                <h3 className="font-display font-bold">No Photos Published</h3>
-                <p className="text-sm text-muted-foreground mt-1">Site photos will appear once approved by the project manager.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {publishedMedia.map((f: any) => (
-                  <div key={f.id} className="metric-card p-2 space-y-2">
-                    {f.mime_type?.startsWith("image/") ? (
-                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer">
-                        <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
-                      </a>
-                    ) : (
-                      <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="aspect-square flex items-center justify-center bg-muted rounded-lg">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
-                      </a>
-                    )}
-                    {f.caption && <p className="text-xs truncate px-1">{f.caption}</p>}
-                    <p className="text-[10px] text-muted-foreground px-1">{fmt(f.created_at)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <ClientPhotoGallery
+              media={publishedMedia}
+              subs={publishedSubs}
+              milestones={publishedMilestones}
+              progress={publishedProgress}
+            />
           </div>
         )}
 
