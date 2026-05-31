@@ -1,5 +1,8 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2, ChevronDown, ChevronRight, Trash2, MoreHorizontal, Send, XCircle, Plus, ClipboardList } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { useState } from "react";
