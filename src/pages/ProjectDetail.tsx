@@ -70,7 +70,9 @@ export default function ProjectDetail() {
           </div>
           <p className="text-sm text-muted-foreground">{project.code}</p>
         </div>
+        <InviteClientDialog projectId={project.id} projectTitle={project.title} />
       </div>
+
 
       <div className="metric-card">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
