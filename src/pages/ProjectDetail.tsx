@@ -20,6 +20,7 @@ import { NewSubMilestoneDialog } from "@/components/dialogs/NewSubMilestoneDialo
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
 import { MilestoneCsvIO } from "@/components/MilestoneCsvIO";
+import { InviteClientDialog } from "@/components/dialogs/InviteClientDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -69,7 +70,9 @@ export default function ProjectDetail() {
           </div>
           <p className="text-sm text-muted-foreground">{project.code}</p>
         </div>
+        <InviteClientDialog projectId={project.id} projectTitle={project.title} />
       </div>
+
 
       <div className="metric-card">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
