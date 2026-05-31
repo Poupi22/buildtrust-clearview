@@ -302,66 +302,120 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
   const delSub = useDeleteSubMilestone();
   const subContribTotal = subs.reduce((s, x: any) => s + Number(x.contribution_pct ?? 0), 0);
 
+  const reviewStatus = m.review_status ?? "draft";
+  const accentBar =
+    reviewStatus === "approved" ? "bg-success" :
+    reviewStatus === "pending_review" ? "bg-primary" :
+    reviewStatus === "rejected" ? "bg-destructive" : "bg-muted-foreground/40";
+
   return (
-    <div className="metric-card">
-      <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => setOpen(!open)} className="p-1 hover:bg-muted rounded">
-          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="font-semibold text-sm">{m.title}</span>
-            <StatusBadge status={m.status} />
-            <StatusBadge status={m.review_status ?? "draft"} />
-            {m.is_published && <span className="text-xs text-primary">• Visible to client</span>}
-            <span className="text-xs text-muted-foreground">· {m.contribution_pct ?? 0}% of project</span>
+    <div className="group rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      {/* Header */}
+      <div className="relative p-5">
+        <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`} />
+        <div className="flex items-start gap-3">
+          <button
+            onClick={() => setOpen(!open)}
+            className="mt-0.5 p-1 -ml-1 rounded hover:bg-muted text-muted-foreground"
+            aria-label={open ? "Collapse" : "Expand"}
+          >
+            {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-display font-bold text-base leading-tight">{m.title}</h3>
+              <StatusBadge status={reviewStatus} />
+              {m.is_published && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
+                  <Eye className="h-3 w-3" /> Client
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{m.planned_date ?? "—"}</span>
+              <span>·</span>
+              <span>{m.contribution_pct ?? 0}% of project</span>
+              {subs.length > 0 && <><span>·</span><span>{subs.length} sub-milestone{subs.length > 1 ? "s" : ""}</span></>}
+            </div>
+            {m.review_comment && (
+              <p className="mt-1.5 text-xs text-muted-foreground italic line-clamp-1">
+                Reviewer: "{m.review_comment}"
+              </p>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Planned: {m.planned_date ?? "—"} {m.actual_date && `· Actual: ${m.actual_date}`}
-          </p>
-          {m.review_comment && <p className="text-xs text-muted-foreground mt-1 italic">Reviewer: "{m.review_comment}"</p>}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-right">
+              <div className="text-2xl font-display font-bold tabular-nums leading-none">{m.progress}%</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">complete</div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 bg-popover">
+                {(reviewStatus === "draft" || reviewStatus === "rejected") && (
+                  <DropdownMenuItem onClick={onSubmitForReview}>
+                    <Send className="h-4 w-4 mr-2" />Submit for review
+                  </DropdownMenuItem>
+                )}
+                {reviewStatus === "pending_review" && (
+                  <>
+                    <DropdownMenuItem onClick={onApprove}>
+                      <CheckCircle2 className="h-4 w-4 mr-2 text-success" />Approve & publish
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onReject} className="text-destructive">
+                      <XCircle className="h-4 w-4 mr-2" />Reject
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {reviewStatus === "approved" && (
+                  <DropdownMenuItem onClick={onTogglePublish}>
+                    {m.is_published ? <><EyeOff className="h-4 w-4 mr-2" />Unpublish</> : <><Eye className="h-4 w-4 mr-2" />Republish</>}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />Delete milestone
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <div className="text-right">
-          <span className="text-lg font-display font-bold">{m.progress}%</span>
+        <div className="mt-3 ml-6">
+          <ProgressBar value={m.progress} size="sm" />
         </div>
       </div>
-      <ProgressBar value={m.progress} size="sm" />
 
+      {/* Sub-milestones */}
       {open && (
-        <div className="mt-4 border-t pt-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground">
-              Sub-milestones · {subContribTotal}% of milestone allocated
-            </h4>
+        <div className="border-t bg-muted/30 px-5 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-xs">
+              <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-semibold uppercase tracking-wider text-muted-foreground">Work packages</span>
+              <span className={`tabular-nums ${subContribTotal === 100 ? "text-success" : "text-muted-foreground"}`}>
+                · {subContribTotal}% allocated
+              </span>
+            </div>
             <NewSubMilestoneDialog projectId={projectId} milestoneId={m.id} />
           </div>
           {subs.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No sub-milestones yet. Add the first work package.</p>
-          ) : subs.map((s: any) => (
-            <SubMilestoneRow key={s.id} s={s} projectId={projectId} onDelete={() => {
-              if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id);
-            }} />
-          ))}
+            <div className="text-center py-8 text-xs text-muted-foreground border border-dashed rounded-lg bg-background">
+              No work packages yet. Add the first one to start tracking progress.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {subs.map((s: any) => (
+                <SubMilestoneRow key={s.id} s={s} projectId={projectId} onDelete={() => {
+                  if (confirm("Delete sub-milestone? Approved progress will be removed.")) delSub.mutate(s.id);
+                }} />
+              ))}
+            </div>
+          )}
         </div>
       )}
-
-      <div className="flex gap-2 mt-3 flex-wrap border-t pt-3">
-        {(m.review_status === "draft" || m.review_status === "rejected") && (
-          <Button size="sm" onClick={onSubmitForReview}>Submit for review</Button>
-        )}
-        {m.review_status === "pending_review" && (
-          <>
-            <Button size="sm" onClick={onApprove}><CheckCircle2 className="h-3 w-3 mr-1" />Approve & publish</Button>
-            <Button size="sm" variant="destructive" onClick={onReject}>Reject</Button>
-          </>
-        )}
-        {m.review_status === "approved" && (
-          <Button size="sm" variant="outline" onClick={onTogglePublish}>
-            {m.is_published ? <><EyeOff className="h-3 w-3 mr-1" />Unpublish</> : <><Eye className="h-3 w-3 mr-1" />Republish</>}
-          </Button>
-        )}
-        <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>Delete milestone</Button>
-      </div>
     </div>
   );
 }
@@ -372,6 +426,7 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
   const review = useReviewProgressReport();
   const delReport = useDeleteProgressReport();
   const pending = reports.filter((r: any) => r.status === "submitted").length;
+  const remaining = Math.max(0, Number(s.target_quantity ?? 0) - Number(s.completed_quantity ?? 0));
 
   const decide = async (id: string, decision: "approved" | "rejected") => {
     const comment = decision === "rejected" ? (prompt("Reason for rejection") ?? undefined) : undefined;
@@ -382,56 +437,68 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
   };
 
   return (
-    <div className="rounded-lg border p-3 bg-muted/30">
-      <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium truncate">{s.title}</span>
-          <StatusBadge status={s.status} />
-          <span className="text-xs text-muted-foreground">· {s.contribution_pct}% of milestone</span>
+    <div className="rounded-lg border bg-card hover:border-primary/30 transition-colors">
+      <div className="p-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-semibold truncate">{s.title}</span>
+              <span className="text-[11px] text-muted-foreground">{s.contribution_pct}% of milestone</span>
+              {pending > 0 && (
+                <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-semibold">
+                  {pending} pending
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 mt-1.5">
+              <ProgressBar value={s.progress_pct} size="sm" className="flex-1" />
+              <span className="text-xs font-semibold tabular-nums w-12 text-right">{Math.round(s.progress_pct)}%</span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground tabular-nums">
+              <span><span className="font-medium text-foreground">{s.completed_quantity}</span> / {s.target_quantity} {s.unit}</span>
+              <span>·</span>
+              <span>{remaining} {s.unit} remaining</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <SubmitProgressReportDialog projectId={projectId} sub={s} />
+            <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowReports(!showReports)}>
+              {showReports ? <ChevronDown className="h-3.5 w-3.5 mr-1" /> : <ChevronRight className="h-3.5 w-3.5 mr-1" />}
+              <span className="text-xs">{reports.length}</span>
+            </Button>
+            <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={onDelete}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
-        <span className="text-sm font-display font-bold">{s.progress_pct}%</span>
-      </div>
-      <p className="text-xs text-muted-foreground mb-2">
-        {s.completed_quantity} / {s.target_quantity} {s.unit}
-      </p>
-      <ProgressBar value={s.progress_pct} size="sm" />
-      <div className="flex gap-2 mt-2 flex-wrap items-center">
-        <SubmitProgressReportDialog projectId={projectId} sub={s} />
-        <Button size="sm" variant="outline" onClick={() => setShowReports(!showReports)}>
-          {showReports ? <ChevronDown className="h-3 w-3 mr-1" /> : <ChevronRight className="h-3 w-3 mr-1" />}
-          Reports ({reports.length}){pending > 0 && <span className="ml-1 text-primary">· {pending} pending</span>}
-        </Button>
-        <Button size="sm" variant="ghost" className="text-destructive ml-auto" onClick={onDelete}>
-          <Trash2 className="h-3 w-3" />
-        </Button>
       </div>
 
       {showReports && (
-        <div className="mt-3 space-y-2">
+        <div className="border-t bg-muted/40 px-3 py-2 space-y-1.5">
           {reports.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No progress reports yet.</p>
+            <p className="text-xs text-muted-foreground py-2 text-center">No progress reports yet.</p>
           ) : reports.map((r: any) => (
-            <div key={r.id} className="rounded-md border bg-background p-2 text-xs space-y-1">
+            <div key={r.id} className="rounded-md border bg-background p-2 text-xs">
               <div className="flex items-center gap-2 flex-wrap">
                 <StatusBadge status={r.status} />
-                <span className="font-medium">{r.quantity} {s.unit}</span>
+                <span className="font-semibold tabular-nums">{r.quantity} {s.unit}</span>
                 <span className="text-muted-foreground">· {r.report_date}</span>
-                {r.is_published && <span className="text-primary">· visible to client</span>}
+                {r.is_published && <span className="text-success text-[10px]">· visible to client</span>}
               </div>
-              {r.description && <p className="text-muted-foreground">{r.description}</p>}
-              {r.review_comment && <p className="italic text-muted-foreground">Reviewer: "{r.review_comment}"</p>}
+              {r.description && <p className="text-muted-foreground mt-1">{r.description}</p>}
+              {r.review_comment && <p className="italic text-muted-foreground mt-1">Reviewer: "{r.review_comment}"</p>}
               {r.status === "submitted" && (
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-2 pt-1.5">
                   <Button size="sm" className="h-7" onClick={() => decide(r.id, "approved")} disabled={review.isPending}>
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Approve & count
+                    <CheckCircle2 className="h-3 w-3 mr-1" />Approve
                   </Button>
-                  <Button size="sm" variant="destructive" className="h-7" onClick={() => decide(r.id, "rejected")} disabled={review.isPending}>
+                  <Button size="sm" variant="outline" className="h-7" onClick={() => decide(r.id, "rejected")} disabled={review.isPending}>
                     Reject
                   </Button>
                 </div>
               )}
               {r.status === "rejected" && (
-                <Button size="sm" variant="ghost" className="h-7 text-destructive"
+                <Button size="sm" variant="ghost" className="h-7 mt-1 text-destructive"
                   onClick={() => { if (confirm("Delete this rejected report?")) delReport.mutate(r.id); }}>
                   <Trash2 className="h-3 w-3 mr-1" />Delete
                 </Button>
@@ -443,3 +510,4 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
     </div>
   );
 }
+
