@@ -106,17 +106,7 @@ export function SettingsPage() {
       </div>
 
       {isAdmin ? (
-        <div className="metric-card">
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
-            <div>
-              <h3 className="font-display font-bold">User management</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Create accounts for admins, engineers, technicians, and clients. A temporary password is generated and shown once.
-              </p>
-            </div>
-            <CreateUserDialog />
-          </div>
-        </div>
+        <UserManagementSection />
       ) : (
         <div className="metric-card text-center py-12">
           <SettingsIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
