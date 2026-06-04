@@ -10,7 +10,7 @@ import { UserPlus } from "lucide-react";
 export function AddMemberDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
   const [userId, setUserId] = useState("");
-  const [role, setRole] = useState<"manager" | "engineer" | "client">("engineer");
+  const [role, setRole] = useState<"manager" | "engineer" | "technician" | "client">("technician");
   const { data: profiles = [] } = useAllProfiles();
   const { data: existing = [] } = useProjectMembers(projectId);
   const add = useAddMember();
@@ -56,8 +56,10 @@ export function AddMemberDialog({ projectId }: { projectId: string }) {
               <SelectContent>
                 <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="engineer">Engineer</SelectItem>
+                <SelectItem value="technician">Technician</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
               </SelectContent>
+
             </Select>
           </div>
         </div>

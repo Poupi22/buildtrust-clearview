@@ -559,11 +559,12 @@ export function useAddMember() {
     mutationFn: async (input: {
       project_id: string;
       user_id: string;
-      role: "manager" | "engineer" | "client";
+      role: "manager" | "engineer" | "technician" | "client";
     }) => {
-      const { error } = await supabase.from("project_members").insert(input);
+      const { error } = await supabase.from("project_members").insert(input as any);
       if (error) throw error;
     },
+
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["project_members"] });
     },

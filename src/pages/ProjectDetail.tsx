@@ -21,6 +21,9 @@ import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressR
 import { UploadMediaDialog } from "@/components/dialogs/UploadMediaDialog";
 import { MilestoneCsvIO } from "@/components/MilestoneCsvIO";
 import { InviteClientDialog } from "@/components/dialogs/InviteClientDialog";
+import { AssignTaskDialog } from "@/components/dialogs/AssignTaskDialog";
+import { ProjectTasksPanel } from "@/components/ProjectTasksPanel";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -70,7 +73,9 @@ export default function ProjectDetail() {
           </div>
           <p className="text-sm text-muted-foreground">{project.code}</p>
         </div>
+        <AssignTaskDialog projectId={project.id} />
         <InviteClientDialog projectId={project.id} projectTitle={project.title} />
+
       </div>
 
 
@@ -125,7 +130,10 @@ export default function ProjectDetail() {
       </div>
 
       {activeTab === "overview" && (
+        <>
+        <ProjectTasksPanel projectId={project.id} canManage={true} />
         <div className="grid lg:grid-cols-2 gap-4">
+
           <div className="metric-card">
             <h3 className="font-display font-bold mb-3">Milestone Progress</h3>
             {milestones.length === 0 ? (
@@ -163,7 +171,9 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+        </>
       )}
+
 
       {activeTab === "milestones" && (
         <div className="space-y-3">
