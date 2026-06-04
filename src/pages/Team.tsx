@@ -43,7 +43,7 @@ export default function Team() {
           <p className="text-muted-foreground text-sm mt-1">Manage members assigned to each project</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {isAdmin && <CreateUserDialog />}
+          
           <Select value={projectId ?? ""} onValueChange={setSelectedId}>
             <SelectTrigger className="w-64"><SelectValue placeholder="Select project" /></SelectTrigger>
             <SelectContent>
