@@ -130,7 +130,10 @@ export default function ProjectDetail() {
       </div>
 
       {activeTab === "overview" && (
+        <>
+        <ProjectTasksPanel projectId={project.id} canManage={true} />
         <div className="grid lg:grid-cols-2 gap-4">
+
           <div className="metric-card">
             <h3 className="font-display font-bold mb-3">Milestone Progress</h3>
             {milestones.length === 0 ? (
