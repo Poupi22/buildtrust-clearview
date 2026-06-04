@@ -171,7 +171,9 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+        </>
       )}
+
 
       {activeTab === "milestones" && (
         <div className="space-y-3">
