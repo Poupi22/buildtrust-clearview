@@ -1,4 +1,4 @@
-import { Users, Settings as SettingsIcon, Trash2 } from "lucide-react";
+import { Users, Settings as SettingsIcon, Trash2, Search, Pencil, UserX, UserCheck, Loader2 } from "lucide-react";
 import {
   useProjects,
   useProjectMembers,
@@ -8,11 +8,16 @@ import {
 } from "@/hooks/useBuildTrust";
 import { AddMemberDialog } from "@/components/dialogs/AddMemberDialog";
 import { CreateUserDialog } from "@/components/dialogs/CreateUserDialog";
+import { EditUserDialog } from "@/components/dialogs/EditUserDialog";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/StatusBadge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 export default function Team() {
