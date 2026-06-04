@@ -42,7 +42,8 @@ export default function Team() {
           <h1 className="text-2xl font-display font-bold">Team</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage members assigned to each project</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {isAdmin && <CreateUserDialog />}
           <Select value={projectId ?? ""} onValueChange={setSelectedId}>
             <SelectTrigger className="w-64"><SelectValue placeholder="Select project" /></SelectTrigger>
             <SelectContent>
@@ -54,6 +55,7 @@ export default function Team() {
           {projectId && isAdmin && <AddMemberDialog projectId={projectId} />}
         </div>
       </div>
+
 
       {!projectId ? (
         <div className="metric-card text-center py-12">
