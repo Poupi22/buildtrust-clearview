@@ -130,11 +130,12 @@ export default function Login() {
           {mode === "signup" && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">I am a...</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {([
                   { value: "company-admin" as const, label: "Admin", icon: Building2 },
                   { value: "engineer" as const, label: "Engineer", icon: User },
-                  { value: "client" as const, label: "Client", icon: User },
+                  { value: "technician" as const, label: "Technician", icon: HardHat },
+                  { value: "client" as const, label: "Client", icon: Eye },
                 ]).map((opt) => (
                   <button
                     key={opt.value}
