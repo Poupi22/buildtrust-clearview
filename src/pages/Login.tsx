@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.jpg";
-import { Building2, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Building2, Mail, Lock, User, ArrowRight, Loader2, HardHat, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 type Mode = "login" | "signup" | "forgot";
@@ -12,7 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"company-admin" | "engineer" | "client">("company-admin");
+  const [role, setRole] = useState<"company-admin" | "engineer" | "technician" | "client">("engineer");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -130,11 +130,12 @@ export default function Login() {
           {mode === "signup" && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">I am a...</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {([
                   { value: "company-admin" as const, label: "Admin", icon: Building2 },
                   { value: "engineer" as const, label: "Engineer", icon: User },
-                  { value: "client" as const, label: "Client", icon: User },
+                  { value: "technician" as const, label: "Technician", icon: HardHat },
+                  { value: "client" as const, label: "Client", icon: Eye },
                 ]).map((opt) => (
                   <button
                     key={opt.value}
