@@ -2,3 +2,6 @@ project_id = "tjpdvjphfyjmluxhlrzu"
 
 [functions.invite-client]
 verify_jwt = true
+
+[functions.create-user]
+verify_jwt = true
