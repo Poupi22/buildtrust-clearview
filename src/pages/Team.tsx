@@ -7,6 +7,8 @@ import {
   useIsAdmin,
 } from "@/hooks/useBuildTrust";
 import { AddMemberDialog } from "@/components/dialogs/AddMemberDialog";
+import { CreateUserDialog } from "@/components/dialogs/CreateUserDialog";
+
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";

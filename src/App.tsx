@@ -14,9 +14,11 @@ import Approvals from "./pages/Approvals";
 import Team, { SettingsPage } from "./pages/Team";
 import NotFound from "./pages/NotFound";
 import ClientPortal from "./pages/ClientPortal";
+import TechnicianPortal from "./pages/TechnicianPortal";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import { Loader2 } from "lucide-react";
+
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,17 @@ function AppRoutes() {
       </Routes>
     );
   }
+
+  // Technician role → field portal only
+  if (role === "technician") {
+    return (
+      <Routes>
+        <Route path="/technician" element={<TechnicianPortal />} />
+        <Route path="*" element={<Navigate to="/technician" replace />} />
+      </Routes>
+    );
+  }
+
 
   // Admin / Engineer / Super-admin → full dashboard
   return (
