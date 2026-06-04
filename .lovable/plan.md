@@ -1,79 +1,57 @@
+# Technician Role, Portal & Admin User Management
+
 ## Goal
-Extend BuildTrust with a hierarchical progress model: Project → Milestone → Sub-Milestone → Progress Reports, with automatic percentage rollup, technician/engineer approval workflow, and client visibility for approved/published work.
+- Introduce a **technician** access level (field worker): can submit reports, edit their rejected reports, log basic actions — but cannot approve, publish, manage members, or delete project data.
+- Give technicians a dedicated **/technician** portal (simplified, focused on "My tasks" + "Submit report").
+- Let admins (super-admin / company-admin) create any user with role + assign them to projects with tasks.
 
-## Data model changes (migration)
+## 1. Database changes (one migration)
 
-New tables:
+- Extend `app_role` enum: add `technician`.
+- Extend `project_member_role` enum: add `technician`.
+- New table `tasks`:
+  - `id`, `project_id`, `milestone_id` (nullable), `sub_milestone_id` (nullable), `assigned_to` (uuid → auth user), `title`, `description`, `due_date`, `status` (`todo` | `in_progress` | `done` | `blocked`), `created_by`, timestamps.
+  - GRANT + RLS:
+    - Admins of the project (`is_admin` or `manager` member) can full CRUD.
+    - The assignee can read their tasks and update only `status`.
+- Update `handle_new_user()` to honor `technician` role from metadata.
+- Update RLS on `progress_reports`:
+  - Technicians (member with role `technician` OR `engineer`) can `INSERT` reports as `submitted` and `UPDATE` only their own reports while status is `draft` or `rejected`.
+  - Approving / publishing remains admin/manager only.
 
-- **`sub_milestones`** — belongs to a milestone
-  - `milestone_id`, `project_id`, `title`, `unit` (text: m², m³, ml, unit, FF, …), `target_quantity` (numeric), `contribution_pct` (numeric, % of parent milestone), `ordering`, `status` (pending/in-progress/completed), `completed_quantity` (numeric, cached), `progress_pct` (numeric, cached 0–100), `is_published`.
-  - Constraint: sum of `contribution_pct` per milestone ≤ 100 (enforced via trigger, soft warning if <100).
+## 2. Edge function — `create-user` (new)
 
-- **`progress_reports`** — technician submissions against a sub-milestone
-  - `sub_milestone_id`, `project_id`, `author_id`, `quantity` (numeric, work done in this report), `description` (text), `report_date`, `status` (submitted/approved/rejected), `review_comment`, `reviewed_by`, `reviewed_at`, `is_published`.
-  - Linked photos via existing `media_files` (add nullable `progress_report_id` column).
+Admin-only. Input: `email`, `full_name`, `role` (any app_role), optional `project_id` + `project_role`, optional `password`.
+- Verifies caller is super-admin or company-admin via JWT.
+- Creates auth user (auto-confirmed), assigns role in `user_roles`, optionally adds to `project_members`.
+- Returns temp password to display once. Reuses pattern from `invite-client`.
 
-Add columns:
-- `milestones.contribution_pct` (numeric, % of project) — drives project rollup.
-- `media_files.progress_report_id` (uuid, nullable).
+## 3. Frontend
 
-Triggers / functions:
-- `recalc_sub_milestone(sub_id)` — sums approved report quantities, updates `completed_quantity`, `progress_pct = min(100, sum/target*100)`, sets `status='completed'` at 100%.
-- `recalc_milestone(milestone_id)` — weighted avg of sub-milestone `progress_pct × contribution_pct / 100`, updates `milestones.progress`.
-- `recalc_project(project_id)` — weighted avg using `milestones.contribution_pct`, updates `projects.completion`.
-- AFTER INSERT/UPDATE/DELETE on `progress_reports` (when status=approved) → cascade recalcs.
-- BEFORE INSERT on `progress_reports`: reject if parent sub-milestone already at 100%.
+### Routing (`src/App.tsx`)
+- Add `role === "technician"` branch → renders only `<TechnicianPortal />` at `/technician`, redirects everything else there.
 
-RLS:
-- `sub_milestones`: managers/engineers manage on their projects; clients see only `is_published=true`; admins all.
-- `progress_reports`: technicians (engineers) insert/update own when `status in (draft,submitted,rejected)`; managers approve/reject; clients see only `status=approved AND is_published=true`.
+### New pages / components
+- `src/pages/TechnicianPortal.tsx`: mobile-first dashboard with:
+  - Header (project picker if assigned to multiple), profile + sign out.
+  - "My tasks" list (from `tasks` where `assigned_to = me`) with status toggle.
+  - "My recent reports" with status badges (draft/submitted/approved/rejected) and an "Edit & resubmit" action for rejected.
+  - Big primary CTA: **Submit progress report** (reuses existing `SubmitProgressReportDialog`).
+- `src/components/dialogs/CreateUserDialog.tsx`: admin form (email, full name, role select incl. technician, optional project assignment + project role). Calls `create-user` edge function. Shows generated credentials once.
+- `src/components/dialogs/AssignTaskDialog.tsx`: pick assignee (project members), milestone/sub-milestone, title, due date.
 
-## Backend hooks (`src/hooks/useBuildTrust.ts`)
+### Updated pages
+- `src/pages/Team.tsx`: add **"Create user"** button (admins only) opening `CreateUserDialog`; add `technician` option in `AddMemberDialog`.
+- `src/pages/ProjectDetail.tsx`: new **Tasks** section listing project tasks with an **"Assign task"** button for admins/managers.
+- `useBuildTrust.ts`: add hooks `useTasks(projectId)`, `useMyTasks()`, `useCreateTask`, `useUpdateTaskStatus`; permission helper `canApprove` (admin/manager only).
+- Hide approve/publish buttons and Approvals nav item for technicians (already non-applicable since they get a separate portal, but also guard in shared dialogs).
 
-Add:
-- `useSubMilestones(milestoneId|projectId)`, `useCreateSubMilestone`, `useUpdateSubMilestone`, `useDeleteSubMilestone`
-- `useProgressReports(filters)`, `useCreateProgressReport`, `useReviewProgressReport (approve/reject)`, `usePublishProgressReport`, `useResubmitProgressReport`, `useDeleteProgressReport`
+## Technical notes
+- Keep `verify_jwt = true` for `create-user` in `supabase/config.toml`.
+- `engineer` role is preserved; existing engineers keep full dashboard access. `technician` is the new restricted field role.
+- All new colors/spacing reuse existing semantic tokens — no hard-coded colors.
+- Task status updates by technicians limited via RLS using `assigned_to = auth.uid()` and column-level: enforced by a trigger that rejects changes to columns other than `status`/`updated_at` when caller isn't admin/manager.
 
-## UI
-
-**Engineer / Manager**
-
-- **Milestone detail panel** (in `ProjectDetail.tsx`): add "Sub-milestones" section with list showing title, unit, target, completed, %, contribution. Buttons: New sub-milestone, Edit, Delete (locked when completed).
-- **New `NewSubMilestoneDialog`**: title, unit (select), target_quantity, contribution_pct (with live "remaining %" indicator for parent milestone).
-- **New `SubmitProgressReportDialog`** (technician flow): pick sub-milestone, quantity completed (with target & remaining shown), description, photo upload, submit. Block if sub at 100%.
-- **Approvals page**: new section "Progress Reports" with quantity, evidence preview, Approve / Reject (with comment), and Publish toggle after approval.
-- **My Reports view** (technician): list of own reports with status badges; rejected ones get Edit/Resubmit/Delete.
-
-**Client Portal**
-
-- Project completion % (live from `projects.completion`).
-- Milestones list with progress bars (only `is_published` ones).
-- Sub-milestone breakdown per milestone (published only) showing % and target/completed.
-- Feed of published approved progress reports with photos, dates, descriptions.
-
-## Calculation summary
-
-```text
-sub.progress_pct   = min(100, sum(approved.quantity) / sub.target_quantity * 100)
-milestone.progress = Σ (sub.progress_pct × sub.contribution_pct) / 100
-project.completion = Σ (milestone.progress × milestone.contribution_pct) / 100
-```
-
-## Out of scope (can be follow-ups)
-- Re-allocating contribution % after work has started (allowed but warns).
-- Multi-tenant company-level reporting changes.
-- Editing approved reports (must reject first).
-
-## Files touched
-
-- `supabase/migrations/<new>.sql` (schema + triggers + RLS)
-- `src/hooks/useBuildTrust.ts` (new hooks)
-- `src/pages/ProjectDetail.tsx` (sub-milestone section)
-- `src/pages/Approvals.tsx` (progress reports section)
-- `src/pages/ClientPortal.tsx` (sub-milestone breakdown + feed)
-- `src/pages/Reports.tsx` (technician progress reports list)
-- `src/components/dialogs/NewSubMilestoneDialog.tsx` (new)
-- `src/components/dialogs/SubmitProgressReportDialog.tsx` (new)
-- `src/components/dialogs/NewMilestoneDialog.tsx` (add `contribution_pct` field)
-
-Ready to implement on approval.
+## Out of scope
+- Notifications/emails on task assignment (can follow later).
+- Time tracking / hours logging.

@@ -601,6 +601,76 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          milestone_id: string | null
+          priority: string
+          project_id: string
+          status: string
+          sub_milestone_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          milestone_id?: string | null
+          priority?: string
+          project_id: string
+          status?: string
+          sub_milestone_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          milestone_id?: string | null
+          priority?: string
+          project_id?: string
+          status?: string
+          sub_milestone_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_sub_milestone_id_fkey"
+            columns: ["sub_milestone_id"]
+            isOneToOne: false
+            referencedRelation: "sub_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -645,7 +715,12 @@ export type Database = {
       recalc_sub_milestone: { Args: { _sub: string }; Returns: undefined }
     }
     Enums: {
-      app_role: "super-admin" | "company-admin" | "engineer" | "client"
+      app_role:
+        | "super-admin"
+        | "company-admin"
+        | "engineer"
+        | "client"
+        | "technician"
       approval_decision: "approved" | "rejected" | "revision-requested"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "open" | "in-progress" | "resolved" | "closed"
@@ -656,7 +731,12 @@ export type Database = {
         | "rejected"
       milestone_status: "pending" | "in-progress" | "completed" | "delayed"
       progress_report_status: "submitted" | "approved" | "rejected"
-      project_member_role: "manager" | "engineer" | "client" | "viewer"
+      project_member_role:
+        | "manager"
+        | "engineer"
+        | "client"
+        | "viewer"
+        | "technician"
       project_status:
         | "active"
         | "on-hold"
@@ -797,7 +877,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super-admin", "company-admin", "engineer", "client"],
+      app_role: [
+        "super-admin",
+        "company-admin",
+        "engineer",
+        "client",
+        "technician",
+      ],
       approval_decision: ["approved", "rejected", "revision-requested"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["open", "in-progress", "resolved", "closed"],
@@ -809,7 +895,13 @@ export const Constants = {
       ],
       milestone_status: ["pending", "in-progress", "completed", "delayed"],
       progress_report_status: ["submitted", "approved", "rejected"],
-      project_member_role: ["manager", "engineer", "client", "viewer"],
+      project_member_role: [
+        "manager",
+        "engineer",
+        "client",
+        "viewer",
+        "technician",
+      ],
       project_status: ["active", "on-hold", "completed", "delayed", "planning"],
       report_status: [
         "draft",
