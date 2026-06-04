@@ -12,7 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"company-admin" | "engineer" | "client">("company-admin");
+  const [role, setRole] = useState<"company-admin" | "engineer" | "technician" | "client">("engineer");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
