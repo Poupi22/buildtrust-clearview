@@ -180,16 +180,13 @@ export default function Login() {
                 Forgot password?
               </button>
               <p className="text-xs text-muted-foreground">
-                No account?{" "}
-                <button onClick={() => setMode("signup")} className="text-primary font-medium hover:underline">
-                  Sign up
-                </button>
+                Accounts are created by your administrator.
               </p>
             </>
           )}
-          {(mode === "signup" || mode === "forgot") && (
+          {mode === "forgot" && (
             <p className="text-xs text-muted-foreground">
-              Already have an account?{" "}
+              Remembered it?{" "}
               <button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">
                 Sign in
               </button>
