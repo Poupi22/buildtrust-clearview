@@ -50,6 +50,27 @@ export function useFirstProject() {
   });
 }
 
+export function useClientUsers() {
+  return useQuery({
+    queryKey: ["client-users"],
+    queryFn: async () => {
+      const { data: roles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "client");
+      if (rolesErr) throw rolesErr;
+      const ids = Array.from(new Set((roles ?? []).map((r: any) => r.user_id)));
+      if (!ids.length) return [];
+      const { data: profiles, error: pErr } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", ids);
+      if (pErr) throw pErr;
+      return (profiles ?? []) as Array<{ user_id: string; full_name: string | null; email: string | null }>;
+    },
+  });
+}
+
 export function useCreateProject() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -59,6 +80,7 @@ export function useCreateProject() {
       type?: string;
       location?: string;
       start_date?: string | null;
+      client_user_id?: string | null;
       documents?: Array<File | { file: File; title: string }>;
     }) => {
       if (!user) throw new Error("Not authenticated");
@@ -81,6 +103,14 @@ export function useCreateProject() {
         user_id: user.id,
         role: "manager",
       });
+      if (input.client_user_id) {
+        const { error: cErr } = await supabase.from("project_members").insert({
+          project_id: data.id,
+          user_id: input.client_user_id,
+          role: "client",
+        });
+        if (cErr) throw cErr;
+      }
       if (input.documents && input.documents.length) {
         for (const entry of input.documents) {
           const file = entry instanceof File ? entry : entry.file;
