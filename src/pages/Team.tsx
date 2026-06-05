@@ -217,7 +217,7 @@ function UserManagementSection() {
               Create, edit, and deactivate users. A temporary password is shown once on creation or password reset.
             </p>
           </div>
-          <CreateUserDialog />
+          <CreateUserDialog onCreated={refresh} />
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
