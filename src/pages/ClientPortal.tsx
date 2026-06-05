@@ -12,15 +12,6 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-  MapPin,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Camera,
-  FileText,
-  Shield,
-  LogOut,
-} from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
