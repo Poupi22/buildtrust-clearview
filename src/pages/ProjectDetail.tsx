@@ -12,7 +12,7 @@ import {
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
   useProgressReports, useReviewProgressReport, useDeleteProgressReport,
-  useProjectMembers,
+  useProjectMembers, useUpdateMediaCaption,
 } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
@@ -292,24 +292,13 @@ export default function ProjectDetail() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {media.map((f: any) => (
-                <div key={f.id} className="metric-card p-2 space-y-2">
-                  {f.mime_type?.startsWith("image/") ? (
-                    <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
-                  ) : (
-                    <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="block aspect-square flex items-center justify-center bg-muted rounded-lg text-xs text-primary">
-                      <FileText className="h-8 w-8" />
-                    </a>
-                  )}
-                  {f.caption && <p className="text-xs truncate">{f.caption}</p>}
-                  <Button
-                    size="sm"
-                    variant={f.is_published ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
-                  >
-                    {f.is_published ? <><CheckCircle2 className="h-3 w-3 mr-1" />Published</> : "Publish"}
-                  </Button>
-                </div>
+                <MediaCard
+                  key={f.id}
+                  f={f}
+                  projectId={project.id}
+                  canEdit={isAdmin}
+                  onTogglePublish={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
+                />
               ))}
             </div>
           )}
@@ -578,5 +567,71 @@ function CircularProgress({ value, size = 56 }: { value: number; size?: number }
     </div>
   );
 }
+
+function MediaCard({ f, projectId, canEdit, onTogglePublish }: {
+  f: any; projectId: string; canEdit: boolean; onTogglePublish: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(f.caption ?? "");
+  const updateCaption = useUpdateMediaCaption();
+
+  const save = async () => {
+    const trimmed = title.trim();
+    if (!trimmed) { toast.error("Title cannot be empty"); return; }
+    try {
+      await updateCaption.mutateAsync({ id: f.id, project_id: projectId, caption: trimmed });
+      toast.success("Title updated");
+      setEditing(false);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed");
+    }
+  };
+
+  return (
+    <div className="metric-card p-2 space-y-2">
+      {f.mime_type?.startsWith("image/") ? (
+        <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
+      ) : (
+        <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="block aspect-square flex items-center justify-center bg-muted rounded-lg text-xs text-primary">
+          <FileText className="h-8 w-8" />
+        </a>
+      )}
+      {editing ? (
+        <div className="space-y-1">
+          <input
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") { setEditing(false); setTitle(f.caption ?? ""); } }}
+            className="w-full text-xs rounded border px-2 py-1 bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <div className="flex gap-1">
+            <Button size="sm" variant="default" className="h-7 flex-1 text-xs" onClick={save} disabled={updateCaption.isPending}>Save</Button>
+            <Button size="sm" variant="outline" className="h-7 flex-1 text-xs" onClick={() => { setEditing(false); setTitle(f.caption ?? ""); }}>Cancel</Button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => canEdit && setEditing(true)}
+          disabled={!canEdit}
+          title={canEdit ? "Click to rename" : undefined}
+          className={`w-full text-left text-xs truncate ${canEdit ? "hover:text-primary cursor-text" : ""}`}
+        >
+          {f.caption || <span className="italic text-muted-foreground">Untitled</span>}
+        </button>
+      )}
+      <Button
+        size="sm"
+        variant={f.is_published ? "default" : "outline"}
+        className="w-full"
+        onClick={onTogglePublish}
+      >
+        {f.is_published ? <><CheckCircle2 className="h-3 w-3 mr-1" />Published</> : "Publish"}
+      </Button>
+    </div>
+  );
+}
+
 
 
