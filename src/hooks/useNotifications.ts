@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+
 export type Notification = {
   id: string;
   user_id: string;
@@ -45,7 +46,15 @@ export function useNotifications(limit = 30) {
         (payload) => {
           qc.invalidateQueries({ queryKey: ["notifications", user.id] });
           const n = payload.new as Notification;
-          toast(n.title, { description: n.body ?? undefined });
+          toast(n.title, {
+            description: n.body ?? undefined,
+            action: n.link
+              ? {
+                  label: "View",
+                  onClick: () => (window.location.href = n.link!),
+                }
+              : undefined,
+          });
         }
       )
       .on(

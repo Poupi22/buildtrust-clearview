@@ -66,7 +66,7 @@ export function NotificationBell({ className }: { className?: string }) {
                 key={n.id}
                 onClick={() => onClick(n)}
                 className={cn(
-                  "w-full text-left px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50 transition",
+                  "w-full text-left px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50 transition cursor-pointer",
                   !n.is_read && "bg-primary/5"
                 )}
               >
