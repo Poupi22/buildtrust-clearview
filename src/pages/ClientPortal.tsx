@@ -20,6 +20,7 @@ import { Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
 

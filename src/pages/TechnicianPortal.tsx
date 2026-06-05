@@ -11,6 +11,7 @@ import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressR
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
 
 const STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "blocked", "done"];
