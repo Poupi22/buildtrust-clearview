@@ -31,6 +31,7 @@ export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
   const { data: projects = [] } = useProjects();
   const [projectId, setProjectId] = useState<string>("");
+  const [viewReport, setViewReport] = useState<any | null>(null);
   const activeProjectId = projectId || projects[0]?.id;
   const activeProject = projects.find((p: any) => p.id === activeProjectId);
 
