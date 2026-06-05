@@ -46,7 +46,15 @@ export function useNotifications(limit = 30) {
         (payload) => {
           qc.invalidateQueries({ queryKey: ["notifications", user.id] });
           const n = payload.new as Notification;
-          toast(n.title, { description: n.body ?? undefined });
+          toast(n.title, {
+            description: n.body ?? undefined,
+            action: n.link
+              ? {
+                  label: "View",
+                  onClick: () => (window.location.href = n.link!),
+                }
+              : undefined,
+          });
         }
       )
       .on(
