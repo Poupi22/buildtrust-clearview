@@ -312,7 +312,12 @@ export default function ProjectDetail() {
       {activeTab === "documents" && (
         <div className="space-y-3">
           <div className="flex justify-end">
-            <UploadMediaDialog projectId={project.id} />
+            <UploadMediaDialog
+              projectId={project.id}
+              label="Upload document"
+              title="Upload document"
+              accept="application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.dwg,.txt,.csv"
+            />
           </div>
           {docMedia.length === 0 ? (
             <div className="metric-card text-center py-12">
