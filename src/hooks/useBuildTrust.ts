@@ -56,28 +56,69 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: async (input: {
       title: string;
-      code: string;
-      client_name?: string;
       type?: string;
       location?: string;
-      planned_end_date?: string | null;
+      start_date?: string | null;
+      documents?: File[];
     }) => {
       if (!user) throw new Error("Not authenticated");
+      const code = `PRJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
       const { data, error } = await supabase
         .from("projects")
-        .insert({ ...input, created_by: user.id })
+        .insert({
+          title: input.title,
+          code,
+          type: input.type ?? null,
+          location: input.location ?? null,
+          start_date: input.start_date || null,
+          created_by: user.id,
+        })
         .select()
         .single();
       if (error) throw error;
-      // auto-add creator as manager so they can see it
       await supabase.from("project_members").insert({
         project_id: data.id,
         user_id: user.id,
         role: "manager",
       });
+      if (input.documents && input.documents.length) {
+        for (const file of input.documents) {
+          const ext = file.name.split(".").pop();
+          const path = `${data.id}/${crypto.randomUUID()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("project-media")
+            .upload(path, file, { contentType: file.type });
+          if (upErr) throw upErr;
+          const { error: mediaErr } = await supabase.from("media_files").insert({
+            project_id: data.id,
+            storage_path: path,
+            mime_type: file.type,
+            caption: file.name,
+            uploaded_by: user.id,
+          });
+          if (mediaErr) throw mediaErr;
+        }
+      }
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+  });
+}
+
+export function useUpdateProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      patch: Record<string, any>;
+    }) => {
+      const { error } = await supabase.from("projects").update(input.patch as any).eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["projects"] });
+      qc.invalidateQueries({ queryKey: ["project", v.id] });
+    },
   });
 }
 
