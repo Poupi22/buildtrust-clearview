@@ -14,6 +14,7 @@ export default function Approvals() {
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
   const reviewProgress = useReviewProgressReport();
+  const [viewProgress, setViewProgress] = useState<any | null>(null);
 
   const pendingReports = reports.filter((r) => r.status === "submitted" || r.status === "under-review");
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
