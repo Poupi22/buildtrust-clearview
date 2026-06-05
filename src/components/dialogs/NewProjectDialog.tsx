@@ -7,19 +7,34 @@ import { useCreateProject, useIsAdmin } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Plus, FileUp, X } from "lucide-react";
 
+type DocEntry = { file: File; title: string };
+
 export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "" });
-  const [files, setFiles] = useState<File[]>([]);
+  const [docs, setDocs] = useState<DocEntry[]>([]);
   const createProject = useCreateProject();
 
   if (!isAdmin) return null;
 
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const next = Array.from(list).map((f) => ({
+      file: f,
+      title: f.name.replace(/\.[^.]+$/, ""),
+    }));
+    setDocs((prev) => [...prev, ...next]);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title) {
-      toast.error("Title is required");
+      toast.error("Project title is required");
+      return;
+    }
+    if (docs.some((d) => !d.title.trim())) {
+      toast.error("Each document needs a title");
       return;
     }
     try {
@@ -28,12 +43,12 @@ export function NewProjectDialog() {
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
-        documents: files,
+        documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
       toast.success("Project created");
       setOpen(false);
       setForm({ title: "", type: "", location: "", start_date: "" });
-      setFiles([]);
+      setDocs([]);
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
     }
@@ -80,21 +95,33 @@ export function NewProjectDialog() {
               type="file"
               multiple
               accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.dwg"
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+              onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
             />
-            <p className="text-xs text-muted-foreground mt-1">Construction plans, estimates, contracts...</p>
-            {files.length > 0 && (
-              <ul className="mt-2 space-y-1">
-                {files.map((f, i) => (
-                  <li key={i} className="flex items-center justify-between text-xs bg-muted/50 rounded px-2 py-1">
-                    <span className="truncate">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+            <p className="text-xs text-muted-foreground mt-1">Plans, estimates, contracts... Give each one a clear title.</p>
+            {docs.length > 0 && (
+              <ul className="mt-2 space-y-2">
+                {docs.map((d, i) => (
+                  <li key={i} className="rounded-md border bg-muted/30 p-2 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground truncate">{d.file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setDocs(docs.filter((_, idx) => idx !== i))}
+                        className="text-muted-foreground hover:text-destructive shrink-0"
+                        aria-label="Remove"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <Input
+                      placeholder="Document title (e.g. Architectural plan v2)"
+                      value={d.title}
+                      onChange={(e) => {
+                        const next = [...docs];
+                        next[i] = { ...next[i], title: e.target.value };
+                        setDocs(next);
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
