@@ -13,9 +13,10 @@ type DocEntry = { file: File; title: string };
 export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
   const [docs, setDocs] = useState<DocEntry[]>([]);
   const createProject = useCreateProject();
+  const { data: clients = [] } = useClientUsers();
 
   if (!isAdmin) return null;
 
