@@ -440,6 +440,7 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
 
 function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string; onDelete: () => void }) {
   const [showReports, setShowReports] = useState(false);
+  const [viewReport, setViewReport] = useState<any | null>(null);
   const { data: reports = [] } = useProgressReports({ projectId, subMilestoneId: s.id });
   const review = useReviewProgressReport();
   const delReport = useDeleteProgressReport();
@@ -451,6 +452,7 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
     try {
       await review.mutateAsync({ id, decision, comment, publish: true });
       toast.success(decision === "approved" ? "Approved · progress updated" : "Rejected");
+      setViewReport(null);
     } catch (e: any) { toast.error(e.message ?? "Failed"); }
   };
 
