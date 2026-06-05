@@ -138,11 +138,17 @@ export default function TechnicianPortal() {
                       <div key={r.id} className="text-xs bg-card rounded p-2">
                         <p className="font-semibold">{sub?.title ?? "Sub-milestone"} — {r.quantity} {sub?.unit}</p>
                         {r.review_comment && <p className="text-muted-foreground mt-1 italic">"{r.review_comment}"</p>}
-                        {sub && (
-                          <div className="mt-2">
-                            <SubmitProgressReportDialog projectId={activeProjectId!} sub={sub} />
-                          </div>
-                        )}
+                        <div className="mt-2 flex items-center gap-2">
+                          {sub && <SubmitProgressReportDialog projectId={activeProjectId!} sub={sub} />}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={() => onDeleteReport(r.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}
