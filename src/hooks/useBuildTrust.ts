@@ -59,7 +59,7 @@ export function useCreateProject() {
       type?: string;
       location?: string;
       start_date?: string | null;
-      documents?: File[];
+      documents?: Array<File | { file: File; title: string }>;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const code = `PRJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
@@ -82,7 +82,9 @@ export function useCreateProject() {
         role: "manager",
       });
       if (input.documents && input.documents.length) {
-        for (const file of input.documents) {
+        for (const entry of input.documents) {
+          const file = entry instanceof File ? entry : entry.file;
+          const caption = entry instanceof File ? file.name : entry.title;
           const ext = file.name.split(".").pop();
           const path = `${data.id}/${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage
@@ -93,7 +95,7 @@ export function useCreateProject() {
             project_id: data.id,
             storage_path: path,
             mime_type: file.type,
-            caption: file.name,
+            caption,
             uploaded_by: user.id,
           });
           if (mediaErr) throw mediaErr;
