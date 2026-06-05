@@ -11,7 +11,7 @@ import { UserPlus, Copy, Check, KeyRound, Mail, Loader2 } from "lucide-react";
 
 type AppRole = "super-admin" | "company-admin" | "engineer" | "technician" | "client";
 
-export function CreateUserDialog() {
+export function CreateUserDialog({ onCreated }: { onCreated?: () => void } = {}) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -43,6 +43,7 @@ export function CreateUserDialog() {
       if (data?.error) throw new Error(data.error);
       setCreds({ email: data.email, password: data.password, created: !!data.created, role: data.role });
       toast.success(data.created ? "User account created" : "Existing user updated");
+      onCreated?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to create user");
     } finally {
