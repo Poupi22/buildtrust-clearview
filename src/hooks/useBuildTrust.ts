@@ -63,10 +63,10 @@ export function useClientUsers() {
       if (!ids.length) return [];
       const { data: profiles, error: pErr } = await supabase
         .from("profiles")
-        .select("user_id, full_name, email")
+        .select("user_id, full_name")
         .in("user_id", ids);
       if (pErr) throw pErr;
-      return (profiles ?? []) as Array<{ user_id: string; full_name: string | null; email: string | null }>;
+      return (profiles ?? []) as Array<{ user_id: string; full_name: string | null }>;
     },
   });
 }
