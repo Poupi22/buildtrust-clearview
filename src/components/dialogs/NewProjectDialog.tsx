@@ -90,6 +90,22 @@ export function NewProjectDialog() {
             <Input id="location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </div>
           <div>
+            <Label htmlFor="client">Client (shareholder)</Label>
+            <Select value={form.client_user_id || undefined} onValueChange={(v) => setForm({ ...form, client_user_id: v })}>
+              <SelectTrigger id="client">
+                <SelectValue placeholder={clients.length ? "Select a client" : "No client accounts yet — invite one first"} />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((c) => (
+                  <SelectItem key={c.user_id} value={c.user_id}>
+                    {c.full_name || c.user_id.slice(0, 8)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">The client will be granted read-only portal access to this project.</p>
+          </div>
+          <div>
             <Label htmlFor="docs" className="flex items-center gap-1.5">
               <FileUp className="h-4 w-4" /> Project documents
             </Label>
