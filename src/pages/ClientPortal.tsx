@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 
-type PortalTab = "overview" | "milestones" | "updates" | "photos";
+type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
 
 export default function ClientPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
