@@ -43,6 +43,7 @@ export function CreateUserDialog({ onCreated }: { onCreated?: () => void } = {})
       if (data?.error) throw new Error(data.error);
       setCreds({ email: data.email, password: data.password, created: !!data.created, role: data.role });
       toast.success(data.created ? "User account created" : "Existing user updated");
+      onCreated?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to create user");
     } finally {
