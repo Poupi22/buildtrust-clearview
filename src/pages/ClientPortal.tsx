@@ -35,6 +35,8 @@ export default function ClientPortal() {
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
   const publishedMilestones = milestones.filter((m: any) => m.is_published && m.review_status === "approved");
   const publishedMedia = media.filter((f: any) => f.is_published);
+  const publishedPhotos = publishedMedia.filter((f: any) => (f.mime_type ?? "").startsWith("image/"));
+  const publishedDocs = publishedMedia.filter((f: any) => !(f.mime_type ?? "").startsWith("image/"));
   const publishedSubs = subs.filter((s: any) => s.is_published || publishedMilestones.find((m: any) => m.id === s.milestone_id));
   const publishedProgress = progress.filter((p: any) => p.status === "approved" && p.is_published);
 
