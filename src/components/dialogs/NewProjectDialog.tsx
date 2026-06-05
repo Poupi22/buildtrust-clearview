@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreateProject, useIsAdmin } from "@/hooks/useBuildTrust";
+import { useCreateProject, useIsAdmin, useClientUsers } from "@/hooks/useBuildTrust";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, FileUp, X } from "lucide-react";
 
