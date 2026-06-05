@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  useProjects, useMilestones, useSubMilestones, useProgressReports,
+  useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
 } from "@/hooks/useBuildTrust";
 import { useMyTasks, useUpdateTaskStatus, TaskStatus } from "@/hooks/useTasks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
-import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle } from "lucide-react";
+import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { toast } from "sonner";
 
