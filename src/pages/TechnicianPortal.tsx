@@ -261,12 +261,14 @@ export default function TechnicianPortal() {
                   {myReports.slice(0, 10).map((r: any) => {
                     const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
                     return (
-                      <button
+                      <div
                         key={r.id}
-                        onClick={() => setViewReport(r)}
-                        className="w-full text-left rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
+                        className="w-full rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
                       >
-                        <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => setViewReport(r)}
+                          className="min-w-0 flex-1 text-left"
+                        >
                           <p className="text-sm font-semibold truncate">{sub?.title ?? "Sub-milestone"}</p>
                           <p className="text-xs text-muted-foreground">
                             {r.quantity} {sub?.unit} · {new Date(r.report_date).toLocaleDateString()}
@@ -274,9 +276,22 @@ export default function TechnicianPortal() {
                           {r.description && (
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
                           )}
+                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <StatusBadge status={r.status} />
+                          {r.status === "rejected" && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => onDeleteReport(r.id)}
+                              title="Delete report"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
-                        <StatusBadge status={r.status} />
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
