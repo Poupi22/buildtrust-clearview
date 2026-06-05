@@ -8,11 +8,11 @@ import {
   CheckSquare,
   Users,
   Settings,
-  Bell,
   LogOut,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -110,10 +110,7 @@ export function TopBar() {
         <h2 className="text-lg font-display font-bold">{profile?.company || "BuildTrust"}</h2>
       </div>
       <div className="flex items-center gap-3">
-        <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-          <Bell className="h-5 w-5 text-muted-foreground" />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-accent" />
-        </button>
+        <NotificationBell />
         <div className="lg:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
           {profile?.avatar_initials || "U"}
         </div>
