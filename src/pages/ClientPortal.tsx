@@ -97,6 +97,7 @@ export default function ClientPortal() {
               <Shield className="h-3.5 w-3.5 text-success" />
               <span>Verified & Approved Updates Only</span>
             </div>
+            <NotificationBell />
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-3.5 w-3.5 mr-1" />Sign out
             </Button>
