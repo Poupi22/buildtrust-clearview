@@ -45,6 +45,11 @@ export default function ProjectDetail() {
   const submitForReview = useSubmitMilestoneForReview();
   const reviewMilestone = useReviewMilestone();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const { user, role: appRole } = useAuth();
+  const { data: members = [] } = useProjectMembers(id);
+  const myMembership = (members as any[]).find((m) => m.user_id === user?.id);
+  const isAdmin = appRole === "super-admin" || appRole === "company-admin";
+  const canManageMilestones = isAdmin || myMembership?.role === "manager" || myMembership?.role === "engineer";
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>;
   if (!project) return (
