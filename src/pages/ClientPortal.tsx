@@ -14,11 +14,12 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
+import { Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 
-type PortalTab = "overview" | "milestones" | "updates" | "photos";
+type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
 
 export default function ClientPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
@@ -34,6 +35,8 @@ export default function ClientPortal() {
   const publishedReports = reports.filter((r) => r.status === "approved" || r.status === "published");
   const publishedMilestones = milestones.filter((m: any) => m.is_published && m.review_status === "approved");
   const publishedMedia = media.filter((f: any) => f.is_published);
+  const publishedPhotos = publishedMedia.filter((f: any) => (f.mime_type ?? "").startsWith("image/"));
+  const publishedDocs = publishedMedia.filter((f: any) => !(f.mime_type ?? "").startsWith("image/"));
   const publishedSubs = subs.filter((s: any) => s.is_published || publishedMilestones.find((m: any) => m.id === s.milestone_id));
   const publishedProgress = progress.filter((p: any) => p.status === "approved" && p.is_published);
 
@@ -56,6 +59,7 @@ export default function ClientPortal() {
     { key: "milestones", label: "Milestones", icon: CheckCircle2 },
     { key: "updates", label: "Updates", icon: FileText },
     { key: "photos", label: "Site Photos", icon: Camera },
+    { key: "documents", label: "Documents", icon: FileText },
   ];
 
   if (isLoading) {
@@ -305,11 +309,39 @@ export default function ClientPortal() {
           <div className="space-y-3">
             {lastMediaUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMediaUpdate)}</p>}
             <ClientPhotoGallery
-              media={publishedMedia}
+              media={publishedPhotos}
               subs={publishedSubs}
               milestones={publishedMilestones}
               progress={publishedProgress}
             />
+          </div>
+        )}
+
+        {activeTab === "documents" && (
+          <div className="space-y-3">
+            {publishedDocs.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Documents Available</h3>
+                <p className="text-sm text-muted-foreground mt-1">Documents will appear here once published by your project manager.</p>
+              </div>
+            ) : publishedDocs.map((d: any) => (
+              <div key={d.id} className="metric-card flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{d.caption || d.file_name || "Untitled document"}</p>
+                  <p className="text-xs text-muted-foreground">{d.mime_type ?? "Document"} · {fmt(d.created_at)}</p>
+                </div>
+                <a
+                  href={getMediaUrl(d.storage_path)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline shrink-0"
+                >
+                  <Download className="h-3.5 w-3.5" />Download
+                </a>
+              </div>
+            ))}
           </div>
         )}
 
