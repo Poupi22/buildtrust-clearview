@@ -40,6 +40,17 @@ export default function TechnicianPortal() {
   const { data: myReports = [] } = useProgressReports({ projectId: activeProjectId, mineOnly: true });
   const { data: tasks = [] } = useMyTasks();
   const updateStatus = useUpdateTaskStatus();
+  const deleteReport = useDeleteProgressReport();
+
+  const onDeleteReport = async (id: string) => {
+    if (!confirm("Delete this rejected report? This cannot be undone.")) return;
+    try {
+      await deleteReport.mutateAsync(id);
+      toast.success("Report deleted");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete");
+    }
+  };
 
   const projectTasks = useMemo(
     () => tasks.filter((t: any) => !activeProjectId || t.project_id === activeProjectId),
