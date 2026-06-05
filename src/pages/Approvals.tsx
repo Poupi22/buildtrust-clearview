@@ -175,6 +175,22 @@ export default function Approvals() {
           )}
         </div>
       )}
+
+      <ProgressReportDetailsDialog
+        open={!!viewProgress}
+        onOpenChange={(o) => !o && setViewProgress(null)}
+        report={viewProgress}
+        sub={viewProgress ? subById(viewProgress.sub_milestone_id) : undefined}
+        actionsDisabled={reviewProgress.isPending}
+        onApprove={viewProgress ? async () => {
+          await decideProgress(viewProgress.id, "approved");
+          setViewProgress(null);
+        } : undefined}
+        onReject={viewProgress ? async () => {
+          await decideProgress(viewProgress.id, "rejected");
+          setViewProgress(null);
+        } : undefined}
+      />
     </div>
   );
 }
