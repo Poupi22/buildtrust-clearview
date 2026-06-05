@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
+import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { toast } from "sonner";
