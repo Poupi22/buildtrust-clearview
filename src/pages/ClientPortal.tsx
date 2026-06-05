@@ -309,11 +309,39 @@ export default function ClientPortal() {
           <div className="space-y-3">
             {lastMediaUpdate && <p className="text-xs text-muted-foreground">Last updated {fmt(lastMediaUpdate)}</p>}
             <ClientPhotoGallery
-              media={publishedMedia}
+              media={publishedPhotos}
               subs={publishedSubs}
               milestones={publishedMilestones}
               progress={publishedProgress}
             />
+          </div>
+        )}
+
+        {activeTab === "documents" && (
+          <div className="space-y-3">
+            {publishedDocs.length === 0 ? (
+              <div className="metric-card text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <h3 className="font-display font-bold">No Documents Available</h3>
+                <p className="text-sm text-muted-foreground mt-1">Documents will appear here once published by your project manager.</p>
+              </div>
+            ) : publishedDocs.map((d: any) => (
+              <div key={d.id} className="metric-card flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{d.caption || d.file_name || "Untitled document"}</p>
+                  <p className="text-xs text-muted-foreground">{d.mime_type ?? "Document"} · {fmt(d.created_at)}</p>
+                </div>
+                <a
+                  href={getMediaUrl(d.storage_path)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline shrink-0"
+                >
+                  <Download className="h-3.5 w-3.5" />Download
+                </a>
+              </div>
+            ))}
           </div>
         )}
 
