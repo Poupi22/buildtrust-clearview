@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText, ClipboardCheck } from "lucide-react";
+import { CheckSquare, Flag, FileText, ClipboardCheck, Eye } from "lucide-react";
 import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
@@ -12,6 +14,7 @@ export default function Approvals() {
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
   const reviewProgress = useReviewProgressReport();
+  const [viewProgress, setViewProgress] = useState<any | null>(null);
 
   const pendingReports = reports.filter((r) => r.status === "submitted" || r.status === "under-review");
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
@@ -119,7 +122,10 @@ export default function Approvals() {
                       {p.report_date}{s && ` · Currently ${s.completed_quantity}/${s.target_quantity} ${s.unit} (${s.progress_pct}%)`}
                     </p>
                     {p.description && <p className="text-sm mb-3">{p.description}</p>}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      <Button variant="outline" className="flex-1" onClick={() => setViewProgress(p)}>
+                        <Eye className="h-3.5 w-3.5 mr-1" /> View details
+                      </Button>
                       <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
                         onClick={() => decideProgress(p.id, "approved")} disabled={reviewProgress.isPending}>
                         Approve & Count
@@ -169,6 +175,22 @@ export default function Approvals() {
           )}
         </div>
       )}
+
+      <ProgressReportDetailsDialog
+        open={!!viewProgress}
+        onOpenChange={(o) => !o && setViewProgress(null)}
+        report={viewProgress}
+        sub={viewProgress ? subById(viewProgress.sub_milestone_id) : undefined}
+        actionsDisabled={reviewProgress.isPending}
+        onApprove={viewProgress ? async () => {
+          await decideProgress(viewProgress.id, "approved");
+          setViewProgress(null);
+        } : undefined}
+        onReject={viewProgress ? async () => {
+          await decideProgress(viewProgress.id, "rejected");
+          setViewProgress(null);
+        } : undefined}
+      />
     </div>
   );
 }

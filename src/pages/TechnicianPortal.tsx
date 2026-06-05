@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
+import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
   const { data: projects = [] } = useProjects();
   const [projectId, setProjectId] = useState<string>("");
+  const [viewReport, setViewReport] = useState<any | null>(null);
   const activeProjectId = projectId || projects[0]?.id;
   const activeProject = projects.find((p: any) => p.id === activeProjectId);
 
@@ -242,15 +244,22 @@ export default function TechnicianPortal() {
                   {myReports.slice(0, 10).map((r: any) => {
                     const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
                     return (
-                      <div key={r.id} className="rounded-lg border p-3 flex items-center justify-between gap-3">
+                      <button
+                        key={r.id}
+                        onClick={() => setViewReport(r)}
+                        className="w-full text-left rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
+                      >
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate">{sub?.title ?? "Sub-milestone"}</p>
                           <p className="text-xs text-muted-foreground">
                             {r.quantity} {sub?.unit} · {new Date(r.report_date).toLocaleDateString()}
                           </p>
+                          {r.description && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
+                          )}
                         </div>
                         <StatusBadge status={r.status} />
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -259,6 +268,13 @@ export default function TechnicianPortal() {
           </>
         )}
       </main>
+
+      <ProgressReportDetailsDialog
+        open={!!viewReport}
+        onOpenChange={(o) => !o && setViewReport(null)}
+        report={viewReport}
+        sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
+      />
     </div>
   );
 }
