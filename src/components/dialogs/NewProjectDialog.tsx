@@ -45,11 +45,12 @@ export function NewProjectDialog() {
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
+        client_user_id: form.client_user_id || null,
         documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
       toast.success("Project created");
       setOpen(false);
-      setForm({ title: "", type: "", location: "", start_date: "" });
+      setForm({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
       setDocs([]);
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
