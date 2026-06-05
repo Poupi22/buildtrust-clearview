@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2, ChevronDown, ChevronRight, Trash2, MoreHorizontal, Send, XCircle, Plus, ClipboardList } from "lucide-react";
+import { ArrowLeft, Camera, FileText, AlertTriangle, MapPin, Calendar, Users, Eye, EyeOff, CheckCircle2, ChevronDown, ChevronRight, Trash2, MoreHorizontal, Send, XCircle, Plus, ClipboardList, FolderOpen, Download } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -31,7 +31,7 @@ import { EditProjectDialog } from "@/components/dialogs/EditProjectDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-type Tab = "overview" | "milestones" | "reports" | "issues" | "photos";
+type Tab = "overview" | "milestones" | "reports" | "issues" | "photos" | "documents";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -61,12 +61,16 @@ export default function ProjectDetail() {
     </div>
   );
 
+  const photoMedia = (media as any[]).filter((f) => f.mime_type?.startsWith("image/"));
+  const docMedia = (media as any[]).filter((f) => !f.mime_type?.startsWith("image/"));
+
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "overview", label: "Overview", icon: FileText },
     { key: "milestones", label: "Milestones", icon: Calendar },
     { key: "reports", label: "Reports", icon: FileText },
     { key: "issues", label: "Issues", icon: AlertTriangle },
     { key: "photos", label: "Photos", icon: Camera },
+    { key: "documents", label: "Documents", icon: FolderOpen },
   ];
 
   return (
@@ -284,14 +288,14 @@ export default function ProjectDetail() {
           <div className="flex justify-end">
             <UploadMediaDialog projectId={project.id} />
           </div>
-          {media.length === 0 ? (
+          {photoMedia.length === 0 ? (
             <div className="metric-card text-center py-12">
               <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
               <p className="text-sm text-muted-foreground">No photos yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {media.map((f: any) => (
+              {photoMedia.map((f: any) => (
                 <MediaCard
                   key={f.id}
                   f={f}
@@ -304,6 +308,33 @@ export default function ProjectDetail() {
           )}
         </div>
       )}
+
+      {activeTab === "documents" && (
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <UploadMediaDialog projectId={project.id} />
+          </div>
+          {docMedia.length === 0 ? (
+            <div className="metric-card text-center py-12">
+              <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">No documents yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {docMedia.map((f: any) => (
+                <DocumentRow
+                  key={f.id}
+                  f={f}
+                  projectId={project.id}
+                  canEdit={isAdmin}
+                  onTogglePublish={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }
