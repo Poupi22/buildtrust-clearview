@@ -184,15 +184,17 @@ export default function ProjectDetail() {
 
       {activeTab === "milestones" && (
         <div className="space-y-3">
-          <div className="flex justify-end gap-2 flex-wrap">
-            <MilestoneCsvIO
-              projectId={project.id}
-              projectCode={project.code}
-              milestones={milestones}
-              getSubs={(mid) => (allSubs as any[]).filter((s) => s.milestone_id === mid)}
-            />
-            <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
-          </div>
+          {canManageMilestones && (
+            <div className="flex justify-end gap-2 flex-wrap">
+              <MilestoneCsvIO
+                projectId={project.id}
+                projectCode={project.code}
+                milestones={milestones}
+                getSubs={(mid) => (allSubs as any[]).filter((s) => s.milestone_id === mid)}
+              />
+              <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
+            </div>
+          )}
           {milestones.length === 0 ? (
             <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
           ) : milestones.map((m: any) => (
