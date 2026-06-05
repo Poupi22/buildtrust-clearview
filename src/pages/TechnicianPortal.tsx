@@ -268,6 +268,13 @@ export default function TechnicianPortal() {
           </>
         )}
       </main>
+
+      <ProgressReportDetailsDialog
+        open={!!viewReport}
+        onOpenChange={(o) => !o && setViewReport(null)}
+        report={viewReport}
+        sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
+      />
     </div>
   );
 }
