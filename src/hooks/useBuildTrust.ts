@@ -338,13 +338,14 @@ export function useCreateProgressReport() {
           const path = `${input.project_id}/${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage.from("project-media").upload(path, file, { contentType: file.type });
           if (upErr) throw upErr;
-          await supabase.from("media_files").insert({
+          const { error: mediaErr } = await supabase.from("media_files").insert({
             project_id: input.project_id,
             storage_path: path,
             mime_type: file.type,
             uploaded_by: user.id,
             progress_report_id: report.id,
           } as any);
+          if (mediaErr) throw mediaErr;
         }
       }
       return report;
