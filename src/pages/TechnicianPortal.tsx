@@ -263,7 +263,8 @@ export default function TechnicianPortal() {
                     );
                   })}
                 </div>
-              )}
+                );
+              })()}
             </section>
 
             {/* My recent reports */}
