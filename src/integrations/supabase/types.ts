@@ -309,6 +309,48 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          is_read: boolean
+          link: string | null
+          project_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          project_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          project_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_initials: string | null
@@ -708,6 +750,33 @@ export type Database = {
       is_project_member: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
+      }
+      notify_project_roles: {
+        Args: {
+          _body: string
+          _entity_id: string
+          _entity_type: string
+          _exclude: string
+          _link: string
+          _project_id: string
+          _roles: Database["public"]["Enums"]["project_member_role"][]
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      notify_users: {
+        Args: {
+          _body: string
+          _entity_id: string
+          _entity_type: string
+          _link: string
+          _project_id: string
+          _title: string
+          _type: string
+          _user_ids: string[]
+        }
+        Returns: undefined
       }
       project_member_role: {
         Args: { _project_id: string; _user_id: string }
