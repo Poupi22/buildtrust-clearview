@@ -11,6 +11,7 @@ import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressR
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
 
 const STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "blocked", "done"];
@@ -92,6 +93,7 @@ export default function TechnicianPortal() {
               {profile?.full_name || user?.email}
             </p>
           </div>
+          <NotificationBell />
           <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
             <LogOut className="h-4 w-4" />
           </Button>

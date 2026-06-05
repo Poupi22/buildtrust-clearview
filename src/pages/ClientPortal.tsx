@@ -20,6 +20,7 @@ import { Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
 
@@ -97,6 +98,7 @@ export default function ClientPortal() {
               <Shield className="h-3.5 w-3.5 text-success" />
               <span>Verified & Approved Updates Only</span>
             </div>
+            <NotificationBell />
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-3.5 w-3.5 mr-1" />Sign out
             </Button>
