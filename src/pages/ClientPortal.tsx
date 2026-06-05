@@ -59,6 +59,7 @@ export default function ClientPortal() {
     { key: "milestones", label: "Milestones", icon: CheckCircle2 },
     { key: "updates", label: "Updates", icon: FileText },
     { key: "photos", label: "Site Photos", icon: Camera },
+    { key: "documents", label: "Documents", icon: FileText },
   ];
 
   if (isLoading) {
