@@ -12,7 +12,9 @@ import {
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
   useProgressReports, useReviewProgressReport, useDeleteProgressReport,
+  useProjectMembers,
 } from "@/hooks/useBuildTrust";
+import { useAuth } from "@/contexts/AuthContext";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
 import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
@@ -43,6 +45,11 @@ export default function ProjectDetail() {
   const submitForReview = useSubmitMilestoneForReview();
   const reviewMilestone = useReviewMilestone();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const { user, role: appRole } = useAuth();
+  const { data: members = [] } = useProjectMembers(id);
+  const myMembership = (members as any[]).find((m) => m.user_id === user?.id);
+  const isAdmin = appRole === "super-admin" || appRole === "company-admin";
+  const canManageMilestones = isAdmin || myMembership?.role === "manager" || myMembership?.role === "engineer";
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>;
   if (!project) return (
@@ -177,15 +184,17 @@ export default function ProjectDetail() {
 
       {activeTab === "milestones" && (
         <div className="space-y-3">
-          <div className="flex justify-end gap-2 flex-wrap">
-            <MilestoneCsvIO
-              projectId={project.id}
-              projectCode={project.code}
-              milestones={milestones}
-              getSubs={(mid) => (allSubs as any[]).filter((s) => s.milestone_id === mid)}
-            />
-            <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
-          </div>
+          {canManageMilestones && (
+            <div className="flex justify-end gap-2 flex-wrap">
+              <MilestoneCsvIO
+                projectId={project.id}
+                projectCode={project.code}
+                milestones={milestones}
+                getSubs={(mid) => (allSubs as any[]).filter((s) => s.milestone_id === mid)}
+              />
+              <NewMilestoneDialog projectId={project.id} nextOrder={milestones.length} />
+            </div>
+          )}
           {milestones.length === 0 ? (
             <p className="text-sm text-muted-foreground">No milestones yet for this project.</p>
           ) : milestones.map((m: any) => (
