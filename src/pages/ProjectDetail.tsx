@@ -12,7 +12,9 @@ import {
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
   useProgressReports, useReviewProgressReport, useDeleteProgressReport,
+  useProjectMembers,
 } from "@/hooks/useBuildTrust";
+import { useAuth } from "@/contexts/AuthContext";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
 import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
