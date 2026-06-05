@@ -7,7 +7,7 @@ import { useUploadMedia } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
-export function UploadMediaDialog({ projectId }: { projectId: string }) {
+export function UploadMediaDialog({ projectId, label = "Upload photo", title = "Upload media", accept = "image/*,application/pdf" }: { projectId: string; label?: string; title?: string; accept?: string }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
@@ -29,14 +29,14 @@ export function UploadMediaDialog({ projectId }: { projectId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Upload className="h-4 w-4 mr-1" />Upload photo</Button>
+        <Button size="sm"><Upload className="h-4 w-4 mr-1" />{label}</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Upload media</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div>
             <Label>File</Label>
-            <Input type="file" accept="image/*,application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <Input type="file" accept={accept} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </div>
           <div>
             <Label>Caption (optional)</Label>
