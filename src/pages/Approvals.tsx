@@ -122,7 +122,10 @@ export default function Approvals() {
                       {p.report_date}{s && ` · Currently ${s.completed_quantity}/${s.target_quantity} ${s.unit} (${s.progress_pct}%)`}
                     </p>
                     {p.description && <p className="text-sm mb-3">{p.description}</p>}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      <Button variant="outline" className="flex-1" onClick={() => setViewProgress(p)}>
+                        <Eye className="h-3.5 w-3.5 mr-1" /> View details
+                      </Button>
                       <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
                         onClick={() => decideProgress(p.id, "approved")} disabled={reviewProgress.isPending}>
                         Approve & Count
