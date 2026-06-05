@@ -26,6 +26,7 @@ import { InviteClientDialog } from "@/components/dialogs/InviteClientDialog";
 import { AssignTaskDialog } from "@/components/dialogs/AssignTaskDialog";
 import { ProjectTasksPanel } from "@/components/ProjectTasksPanel";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
+import { EditProjectDialog } from "@/components/dialogs/EditProjectDialog";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -81,8 +82,11 @@ export default function ProjectDetail() {
           </div>
           <p className="text-sm text-muted-foreground">{project.code}</p>
         </div>
+        {isAdmin && <EditProjectDialog project={project} />}
         <AssignTaskDialog projectId={project.id} />
         <InviteClientDialog projectId={project.id} projectTitle={project.title} />
+
+
 
       </div>
 

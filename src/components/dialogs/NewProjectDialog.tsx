@@ -1,32 +1,39 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useCreateProject } from "@/hooks/useBuildTrust";
+import { useCreateProject, useIsAdmin } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, FileUp, X } from "lucide-react";
 
 export function NewProjectDialog() {
+  const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", code: "", client_name: "", type: "", location: "", planned_end_date: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "" });
+  const [files, setFiles] = useState<File[]>([]);
   const createProject = useCreateProject();
+
+  if (!isAdmin) return null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.code) {
-      toast.error("Title and code are required");
+    if (!form.title) {
+      toast.error("Title is required");
       return;
     }
     try {
       await createProject.mutateAsync({
-        ...form,
-        planned_end_date: form.planned_end_date || null,
+        title: form.title,
+        type: form.type || undefined,
+        location: form.location || undefined,
+        start_date: form.start_date || null,
+        documents: files,
       });
       toast.success("Project created");
       setOpen(false);
-      setForm({ title: "", code: "", client_name: "", type: "", location: "", planned_end_date: "" });
+      setForm({ title: "", type: "", location: "", start_date: "" });
+      setFiles([]);
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
     }
@@ -40,9 +47,10 @@ export function NewProjectDialog() {
           <span className="hidden sm:inline">New Project</span>
         </button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create new project</DialogTitle>
+          <DialogDescription>A project ID will be generated automatically.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           <div>
@@ -51,27 +59,46 @@ export function NewProjectDialog() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="code">Code *</Label>
-              <Input id="code" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
-            </div>
-            <div>
               <Label htmlFor="type">Type</Label>
               <Input id="type" placeholder="Residential, Bridge..." value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
             </div>
+            <div>
+              <Label htmlFor="start_date">Expected start date</Label>
+              <Input id="start_date" type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+            </div>
           </div>
           <div>
-            <Label htmlFor="client_name">Client name</Label>
-            <Input id="client_name" value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} />
+            <Label htmlFor="location">Location</Label>
+            <Input id="location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="location">Location</Label>
-              <Input id="location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor="planned_end_date">Target date</Label>
-              <Input id="planned_end_date" type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} />
-            </div>
+          <div>
+            <Label htmlFor="docs" className="flex items-center gap-1.5">
+              <FileUp className="h-4 w-4" /> Project documents
+            </Label>
+            <Input
+              id="docs"
+              type="file"
+              multiple
+              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.dwg"
+              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+            />
+            <p className="text-xs text-muted-foreground mt-1">Construction plans, estimates, contracts...</p>
+            {files.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {files.map((f, i) => (
+                  <li key={i} className="flex items-center justify-between text-xs bg-muted/50 rounded px-2 py-1">
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <DialogFooter>
             <Button type="submit" disabled={createProject.isPending}>
