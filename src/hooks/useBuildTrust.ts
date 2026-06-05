@@ -558,6 +558,20 @@ export function useUploadMedia() {
   });
 }
 
+export function useUpdateMediaCaption() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; project_id: string; caption: string }) => {
+      const { error } = await supabase
+        .from("media_files")
+        .update({ caption: input.caption })
+        .eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["media", v.project_id] }),
+  });
+}
+
 export function useToggleMediaPublish() {
   const qc = useQueryClient();
   return useMutation({

@@ -12,7 +12,7 @@ import {
   useSubmitMilestoneForReview, useReviewMilestone,
   useSubMilestones, useDeleteSubMilestone,
   useProgressReports, useReviewProgressReport, useDeleteProgressReport,
-  useProjectMembers,
+  useProjectMembers, useUpdateMediaCaption,
 } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
 import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
@@ -292,24 +292,13 @@ export default function ProjectDetail() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {media.map((f: any) => (
-                <div key={f.id} className="metric-card p-2 space-y-2">
-                  {f.mime_type?.startsWith("image/") ? (
-                    <img src={getMediaUrl(f.storage_path)} alt={f.caption ?? ""} className="w-full aspect-square object-cover rounded-lg" />
-                  ) : (
-                    <a href={getMediaUrl(f.storage_path)} target="_blank" rel="noreferrer" className="block aspect-square flex items-center justify-center bg-muted rounded-lg text-xs text-primary">
-                      <FileText className="h-8 w-8" />
-                    </a>
-                  )}
-                  {f.caption && <p className="text-xs truncate">{f.caption}</p>}
-                  <Button
-                    size="sm"
-                    variant={f.is_published ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
-                  >
-                    {f.is_published ? <><CheckCircle2 className="h-3 w-3 mr-1" />Published</> : "Publish"}
-                  </Button>
-                </div>
+                <MediaCard
+                  key={f.id}
+                  f={f}
+                  projectId={project.id}
+                  canEdit={isAdmin}
+                  onTogglePublish={() => togglePublish.mutate({ id: f.id, project_id: project.id, is_published: !f.is_published })}
+                />
               ))}
             </div>
           )}
