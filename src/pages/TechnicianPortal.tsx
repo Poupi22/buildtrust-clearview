@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  useProjects, useMilestones, useSubMilestones, useProgressReports,
+  useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
 } from "@/hooks/useBuildTrust";
 import { useMyTasks, useUpdateTaskStatus, TaskStatus } from "@/hooks/useTasks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
-import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle } from "lucide-react";
+import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { toast } from "sonner";
 
@@ -40,6 +40,17 @@ export default function TechnicianPortal() {
   const { data: myReports = [] } = useProgressReports({ projectId: activeProjectId, mineOnly: true });
   const { data: tasks = [] } = useMyTasks();
   const updateStatus = useUpdateTaskStatus();
+  const deleteReport = useDeleteProgressReport();
+
+  const onDeleteReport = async (id: string) => {
+    if (!confirm("Delete this rejected report? This cannot be undone.")) return;
+    try {
+      await deleteReport.mutateAsync(id);
+      toast.success("Report deleted");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete");
+    }
+  };
 
   const projectTasks = useMemo(
     () => tasks.filter((t: any) => !activeProjectId || t.project_id === activeProjectId),
@@ -127,11 +138,17 @@ export default function TechnicianPortal() {
                       <div key={r.id} className="text-xs bg-card rounded p-2">
                         <p className="font-semibold">{sub?.title ?? "Sub-milestone"} — {r.quantity} {sub?.unit}</p>
                         {r.review_comment && <p className="text-muted-foreground mt-1 italic">"{r.review_comment}"</p>}
-                        {sub && (
-                          <div className="mt-2">
-                            <SubmitProgressReportDialog projectId={activeProjectId!} sub={sub} />
-                          </div>
-                        )}
+                        <div className="mt-2 flex items-center gap-2">
+                          {sub && <SubmitProgressReportDialog projectId={activeProjectId!} sub={sub} />}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={() => onDeleteReport(r.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}
@@ -244,12 +261,14 @@ export default function TechnicianPortal() {
                   {myReports.slice(0, 10).map((r: any) => {
                     const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
                     return (
-                      <button
+                      <div
                         key={r.id}
-                        onClick={() => setViewReport(r)}
-                        className="w-full text-left rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
+                        className="w-full rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
                       >
-                        <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => setViewReport(r)}
+                          className="min-w-0 flex-1 text-left"
+                        >
                           <p className="text-sm font-semibold truncate">{sub?.title ?? "Sub-milestone"}</p>
                           <p className="text-xs text-muted-foreground">
                             {r.quantity} {sub?.unit} · {new Date(r.report_date).toLocaleDateString()}
@@ -257,9 +276,22 @@ export default function TechnicianPortal() {
                           {r.description && (
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
                           )}
+                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <StatusBadge status={r.status} />
+                          {r.status === "rejected" && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => onDeleteReport(r.id)}
+                              title="Delete report"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
-                        <StatusBadge status={r.status} />
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
