@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreateProject, useIsAdmin } from "@/hooks/useBuildTrust";
+import { useCreateProject, useIsAdmin, useClientUsers } from "@/hooks/useBuildTrust";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, FileUp, X } from "lucide-react";
 
@@ -12,9 +13,10 @@ type DocEntry = { file: File; title: string };
 export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
   const [docs, setDocs] = useState<DocEntry[]>([]);
   const createProject = useCreateProject();
+  const { data: clients = [] } = useClientUsers();
 
   if (!isAdmin) return null;
 
@@ -43,11 +45,12 @@ export function NewProjectDialog() {
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
+        client_user_id: form.client_user_id || null,
         documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
       toast.success("Project created");
       setOpen(false);
-      setForm({ title: "", type: "", location: "", start_date: "" });
+      setForm({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
       setDocs([]);
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
@@ -85,6 +88,22 @@ export function NewProjectDialog() {
           <div>
             <Label htmlFor="location">Location</Label>
             <Input id="location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          </div>
+          <div>
+            <Label htmlFor="client">Client (shareholder)</Label>
+            <Select value={form.client_user_id || undefined} onValueChange={(v) => setForm({ ...form, client_user_id: v })}>
+              <SelectTrigger id="client">
+                <SelectValue placeholder={clients.length ? "Select a client" : "No client accounts yet — invite one first"} />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((c) => (
+                  <SelectItem key={c.user_id} value={c.user_id}>
+                    {c.full_name || c.user_id.slice(0, 8)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">The client will be granted read-only portal access to this project.</p>
           </div>
           <div>
             <Label htmlFor="docs" className="flex items-center gap-1.5">
