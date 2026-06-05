@@ -25,6 +25,7 @@ import { MilestoneCsvIO } from "@/components/MilestoneCsvIO";
 import { InviteClientDialog } from "@/components/dialogs/InviteClientDialog";
 import { AssignTaskDialog } from "@/components/dialogs/AssignTaskDialog";
 import { ProjectTasksPanel } from "@/components/ProjectTasksPanel";
+import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -439,6 +440,7 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
 
 function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string; onDelete: () => void }) {
   const [showReports, setShowReports] = useState(false);
+  const [viewReport, setViewReport] = useState<any | null>(null);
   const { data: reports = [] } = useProgressReports({ projectId, subMilestoneId: s.id });
   const review = useReviewProgressReport();
   const delReport = useDeleteProgressReport();
@@ -450,6 +452,7 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
     try {
       await review.mutateAsync({ id, decision, comment, publish: true });
       toast.success(decision === "approved" ? "Approved · progress updated" : "Rejected");
+      setViewReport(null);
     } catch (e: any) { toast.error(e.message ?? "Failed"); }
   };
 
@@ -504,26 +507,41 @@ function SubMilestoneRow({ s, projectId, onDelete }: { s: any; projectId: string
               </div>
               {r.description && <p className="text-muted-foreground mt-1">{r.description}</p>}
               {r.review_comment && <p className="italic text-muted-foreground mt-1">Reviewer: "{r.review_comment}"</p>}
-              {r.status === "submitted" && (
-                <div className="flex gap-2 pt-1.5">
-                  <Button size="sm" className="h-7" onClick={() => decide(r.id, "approved")} disabled={review.isPending}>
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Approve
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-7" onClick={() => decide(r.id, "rejected")} disabled={review.isPending}>
-                    Reject
-                  </Button>
-                </div>
-              )}
-              {r.status === "rejected" && (
-                <Button size="sm" variant="ghost" className="h-7 mt-1 text-destructive"
-                  onClick={() => { if (confirm("Delete this rejected report?")) delReport.mutate(r.id); }}>
-                  <Trash2 className="h-3 w-3 mr-1" />Delete
+              <div className="flex gap-2 pt-1.5 flex-wrap">
+                <Button size="sm" variant="outline" className="h-7" onClick={() => setViewReport(r)}>
+                  <Eye className="h-3 w-3 mr-1" />View details
                 </Button>
-              )}
+                {r.status === "submitted" && (
+                  <>
+                    <Button size="sm" className="h-7" onClick={() => decide(r.id, "approved")} disabled={review.isPending}>
+                      <CheckCircle2 className="h-3 w-3 mr-1" />Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7" onClick={() => decide(r.id, "rejected")} disabled={review.isPending}>
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {r.status === "rejected" && (
+                  <Button size="sm" variant="ghost" className="h-7 text-destructive"
+                    onClick={() => { if (confirm("Delete this rejected report?")) delReport.mutate(r.id); }}>
+                    <Trash2 className="h-3 w-3 mr-1" />Delete
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <ProgressReportDetailsDialog
+        open={!!viewReport}
+        onOpenChange={(o) => !o && setViewReport(null)}
+        report={viewReport}
+        sub={s}
+        actionsDisabled={review.isPending}
+        onApprove={viewReport?.status === "submitted" ? () => decide(viewReport.id, "approved") : undefined}
+        onReject={viewReport?.status === "submitted" ? () => decide(viewReport.id, "rejected") : undefined}
+      />
     </div>
   );
 }
