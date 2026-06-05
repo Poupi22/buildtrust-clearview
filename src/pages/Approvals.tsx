@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText, ClipboardCheck } from "lucide-react";
+import { CheckSquare, Flag, FileText, ClipboardCheck, Eye } from "lucide-react";
 import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
