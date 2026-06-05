@@ -224,13 +224,31 @@ export default function TechnicianPortal() {
                   <h2 className="font-display font-bold">Report progress</h2>
                 </div>
               </div>
-              {subs.length === 0 ? (
-                <div className="metric-card text-center py-8">
-                  <p className="text-sm text-muted-foreground">No sub-milestones defined yet.</p>
-                </div>
-              ) : (
+              {(() => {
+                const allowedMilestoneIds = new Set(
+                  projectTasks.filter((t: any) => t.milestone_id && !t.sub_milestone_id).map((t: any) => t.milestone_id)
+                );
+                const allowedSubIds = new Set(
+                  projectTasks.filter((t: any) => t.sub_milestone_id).map((t: any) => t.sub_milestone_id)
+                );
+                const visibleSubs = subs.filter((s: any) =>
+                  Number(s.progress_pct) < 100 &&
+                  (allowedSubIds.has(s.id) || allowedMilestoneIds.has(s.milestone_id))
+                );
+                if (visibleSubs.length === 0) {
+                  return (
+                    <div className="metric-card text-center py-8">
+                      <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm font-semibold">No assigned milestones yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your engineer or administrator must assign you a task on a milestone or sub-milestone before you can report progress.
+                      </p>
+                    </div>
+                  );
+                }
+                return (
                 <div className="space-y-2">
-                  {subs.filter((s: any) => Number(s.progress_pct) < 100).map((s: any) => {
+                  {visibleSubs.map((s: any) => {
                     const m = milestones.find((mm: any) => mm.id === s.milestone_id);
                     return (
                       <div key={s.id} className="metric-card flex items-center gap-3">
@@ -245,7 +263,8 @@ export default function TechnicianPortal() {
                     );
                   })}
                 </div>
-              )}
+                );
+              })()}
             </section>
 
             {/* My recent reports */}
