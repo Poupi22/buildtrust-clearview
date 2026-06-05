@@ -334,3 +334,149 @@ function StatCard({ label, value, total, icon }: { label: string; value: number;
     </div>
   );
 }
+
+function MilestoneCard({
+  milestone: m,
+  subs,
+  progress,
+  media,
+  fmt,
+}: {
+  milestone: any;
+  subs: any[];
+  progress: any[];
+  media: any[];
+  fmt: (d?: string | null) => string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [openSub, setOpenSub] = useState<string | null>(null);
+
+  return (
+    <div className="metric-card">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-4 text-left"
+      >
+        <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
+          m.status === "completed" ? "bg-success/10 text-success" :
+          m.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+        }`}>
+          {m.status === "completed" ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span className="font-semibold text-sm">{m.title}</span>
+            <StatusBadge status={m.status} />
+            <span className="text-xs text-muted-foreground">· {m.contribution_pct ?? 0}% of project</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Completed: ${m.actual_date}`}
+          </p>
+          <p className="text-xs text-muted-foreground">Last updated: {fmt(m.updated_at)}</p>
+          <ProgressBar value={m.progress} size="sm" className="mt-2 max-w-64" />
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-lg font-display font-bold">{m.progress}%</span>
+          {subs.length > 0 && (expanded
+            ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            : <ChevronRight className="h-4 w-4 text-muted-foreground" />)}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 border-t pt-3 space-y-2">
+          {subs.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No sub-tasks published for this milestone yet.</p>
+          ) : subs.map((s: any) => {
+            const isOpen = openSub === s.id;
+            const subProgress = progress.filter((p: any) => p.sub_milestone_id === s.id);
+            const subMedia = media.filter(
+              (mf: any) => mf.sub_milestone_id === s.id || subProgress.some((p: any) => p.id === mf.progress_report_id),
+            );
+            return (
+              <div key={s.id} className="rounded-lg border bg-card/50 p-3">
+                <button
+                  type="button"
+                  onClick={() => setOpenSub(isOpen ? null : s.id)}
+                  className="w-full flex items-center gap-3 text-left"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-medium truncate">{s.title}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {s.completed_quantity}/{s.target_quantity} {s.unit}
+                      </span>
+                      <StatusBadge status={s.status} />
+                    </div>
+                    <ProgressBar value={s.progress_pct} size="sm" className="mt-1" />
+                  </div>
+                  <span className="text-xs font-display font-bold shrink-0">{s.progress_pct}%</span>
+                  {isOpen
+                    ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                </button>
+
+                {isOpen && (
+                  <div className="mt-3 pt-3 border-t space-y-3">
+                    {s.description && (
+                      <p className="text-xs text-muted-foreground">{s.description}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div><span className="text-muted-foreground">Planned start:</span> {s.planned_start_date ?? "—"}</div>
+                      <div><span className="text-muted-foreground">Planned end:</span> {s.planned_end_date ?? "—"}</div>
+                    </div>
+
+                    {subProgress.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold mb-1">Recent progress</p>
+                        <ul className="space-y-1">
+                          {subProgress.slice(0, 5).map((p: any) => (
+                            <li key={p.id} className="text-xs flex justify-between gap-2">
+                              <span className="text-muted-foreground">{p.report_date}</span>
+                              <span className="font-medium">+{p.quantity} {s.unit}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {subMedia.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold mb-1">Photos & docs</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {subMedia.slice(0, 6).map((mf: any) => {
+                            const isImg = (mf.mime_type ?? "").startsWith("image/");
+                            return (
+                              <a
+                                key={mf.id}
+                                href={getMediaUrl(mf.storage_path)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="block aspect-square rounded-md border bg-muted overflow-hidden"
+                                title={mf.caption || mf.file_name}
+                              >
+                                {isImg ? (
+                                  <img src={getMediaUrl(mf.storage_path)} alt={mf.caption ?? ""} className="h-full w-full object-cover" />
+                                ) : (
+                                  <div className="h-full w-full flex flex-col items-center justify-center text-[10px] p-1 text-center">
+                                    <FileText className="h-5 w-5 text-primary mb-1" />
+                                    <span className="truncate w-full">{mf.caption || mf.file_name}</span>
+                                  </div>
+                                )}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
