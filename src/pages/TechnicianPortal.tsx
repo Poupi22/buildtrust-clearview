@@ -187,17 +187,7 @@ export default function TechnicianPortal() {
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              <Select value={activeProjectId ?? ""} onValueChange={setProjectId}>
-                <SelectTrigger className="w-full sm:w-72"><SelectValue placeholder="Select project" /></SelectTrigger>
-                <SelectContent>
-                  {projects.map((p: any) => (
-                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {activeProject && <StatusBadge status={activeProject.status} />}
-            </div>
+
 
             {/* Rejected reports alert */}
             {rejectedReports.length > 0 && (
