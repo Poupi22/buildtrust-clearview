@@ -29,7 +29,9 @@ export function ProjectTasksPanel({ projectId, canManage }: { projectId: string;
   const { data: profiles = [] } = useAllProfiles();
   const update = useUpdateTaskStatus();
   const remove = useDeleteTask();
+  const reassign = useReassignTask();
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+  const assignableProfiles = profiles.filter((p: any) => p.user_id);
 
   const filtered = filter === "all" ? tasks : tasks.filter((t: any) => t.status === filter);
 
