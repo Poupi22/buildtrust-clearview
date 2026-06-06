@@ -304,7 +304,7 @@ export default function TechnicianPortal() {
             <FileText className="h-3.5 w-3.5" /> Sub-milestones
           </div>
           <p className="text-3xl font-display font-bold mt-2">
-            {subs.filter((s: any) => Number(s.progress_pct) < 100).length}
+            {remainingAllowedSubs.length}
           </p>
           <p className="text-xs text-muted-foreground mt-1">remaining to complete</p>
         </button>
