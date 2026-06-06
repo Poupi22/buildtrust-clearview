@@ -69,7 +69,22 @@ export function ProjectTasksPanel({ projectId, canManage }: { projectId: string;
                     </div>
                     {t.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{t.description}</p>}
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                      <span>👤 {assignee?.full_name ?? t.assigned_to.slice(0, 8)}</span>
+                      {canManage ? (
+                        <Select value={t.assigned_to} onValueChange={async (v) => {
+                          if (v === t.assigned_to) return;
+                          try { await reassign.mutateAsync({ id: t.id, assigned_to: v }); toast.success("Reassigned"); }
+                          catch (e: any) { toast.error(e.message ?? "Failed"); }
+                        }}>
+                          <SelectTrigger className="h-7 text-xs w-48"><SelectValue placeholder="Assign…" /></SelectTrigger>
+                          <SelectContent>
+                            {assignableProfiles.map((p: any) => (
+                              <SelectItem key={p.user_id} value={p.user_id}>{p.full_name ?? p.user_id.slice(0, 8)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span>👤 {assignee?.full_name ?? t.assigned_to.slice(0, 8)}</span>
+                      )}
                       {t.due_date && (
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />{new Date(t.due_date).toLocaleDateString()}
