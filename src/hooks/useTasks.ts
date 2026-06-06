@@ -80,6 +80,18 @@ export function useUpdateTaskStatus() {
   });
 }
 
+export function useReassignTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; assigned_to: string }) => {
+      const { error } = await (supabase as any).from("tasks")
+        .update({ assigned_to: input.assigned_to }).eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
 export function useDeleteTask() {
   const qc = useQueryClient();
   return useMutation({
