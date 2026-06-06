@@ -131,14 +131,9 @@ export default function TechnicianPortal() {
                           {t.milestone_id && <span>· {milestoneTitle(t.milestone_id)}</span>}
                         </div>
                       </div>
-                      <Select value={t.status} onValueChange={(v) => onChangeStatus(t.id, v as TaskStatus)}>
-                        <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {STATUS_ORDER.map((s) => (
-                            <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <span className="text-[10px] uppercase rounded px-2 py-1 font-bold bg-muted text-muted-foreground whitespace-nowrap">
+                        {STATUS_LABEL[(t.status as TaskStatus) ?? "todo"]}
+                      </span>
                     </div>
                   </div>
                 ))}
