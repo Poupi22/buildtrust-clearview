@@ -426,9 +426,10 @@ export default function TechnicianPortal() {
             </section>
           </>
         )}
-          <main className="px-4 py-5 space-y-5 max-w-5xl w-full mx-auto">{/* dummy to satisfy */}</main>
+          </main>
         </div>
       </div>
+
 
       <ProgressReportDetailsDialog
         open={!!viewReport}
