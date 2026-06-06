@@ -242,19 +242,39 @@ export default function TechnicianPortal() {
                     </div>
                   );
                 }
+                const byMilestone = new Map<string, any[]>();
+                for (const s of visibleSubs) {
+                  const key = s.milestone_id ?? "_none";
+                  if (!byMilestone.has(key)) byMilestone.set(key, []);
+                  byMilestone.get(key)!.push(s);
+                }
+                const orderedKeys = milestones
+                  .map((m: any) => m.id)
+                  .filter((id: string) => byMilestone.has(id))
+                  .concat(byMilestone.has("_none") ? ["_none"] : []);
                 return (
-                <div className="space-y-2">
-                  {visibleSubs.map((s: any) => {
-                    const m = milestones.find((mm: any) => mm.id === s.milestone_id);
+                <div className="space-y-5">
+                  {orderedKeys.map((mid: string) => {
+                    const m = milestones.find((mm: any) => mm.id === mid);
+                    const items = byMilestone.get(mid)!;
                     return (
-                      <div key={s.id} className="metric-card flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">{s.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {m?.title} · {s.completed_quantity}/{s.target_quantity} {s.unit} · {s.progress_pct}%
-                          </p>
+                      <div key={mid}>
+                        <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
+                          {m?.title ?? "Unassigned"} · {items.length}
+                        </p>
+                        <div className="space-y-2">
+                          {items.map((s: any) => (
+                            <div key={s.id} className="metric-card flex items-center gap-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{s.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {s.completed_quantity}/{s.target_quantity} {s.unit} · {s.progress_pct}%
+                                </p>
+                              </div>
+                              <SubmitProgressReportDialog projectId={activeProjectId!} sub={s} />
+                            </div>
+                          ))}
                         </div>
-                        <SubmitProgressReportDialog projectId={activeProjectId!} sub={s} />
                       </div>
                     );
                   })}
@@ -271,46 +291,73 @@ export default function TechnicianPortal() {
               </div>
               {myReports.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No reports yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {myReports.slice(0, 10).map((r: any) => {
-                    const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
-                    return (
-                      <div
-                        key={r.id}
-                        className="w-full rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
-                      >
-                        <button
-                          onClick={() => setViewReport(r)}
-                          className="min-w-0 flex-1 text-left"
-                        >
-                          <p className="text-sm font-semibold truncate">{sub?.title ?? "Sub-milestone"}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {r.quantity} {sub?.unit} · {new Date(r.report_date).toLocaleDateString()}
+              ) : (() => {
+                const recent = myReports.slice(0, 20);
+                const byMs = new Map<string, any[]>();
+                for (const r of recent) {
+                  const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
+                  const key = sub?.milestone_id ?? "_none";
+                  if (!byMs.has(key)) byMs.set(key, []);
+                  byMs.get(key)!.push(r);
+                }
+                const keys = milestones
+                  .map((m: any) => m.id)
+                  .filter((id: string) => byMs.has(id))
+                  .concat(byMs.has("_none") ? ["_none"] : []);
+                return (
+                  <div className="space-y-5">
+                    {keys.map((mid: string) => {
+                      const m = milestones.find((mm: any) => mm.id === mid);
+                      const items = byMs.get(mid)!;
+                      return (
+                        <div key={mid}>
+                          <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
+                            {m?.title ?? "Unassigned"} · {items.length}
                           </p>
-                          {r.description && (
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
-                          )}
-                        </button>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <StatusBadge status={r.status} />
-                          {r.status === "rejected" && (
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                              onClick={() => onDeleteReport(r.id)}
-                              title="Delete report"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <div className="space-y-2">
+                            {items.map((r: any) => {
+                              const sub = subs.find((s: any) => s.id === r.sub_milestone_id);
+                              return (
+                                <div
+                                  key={r.id}
+                                  className="w-full rounded-lg border p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition"
+                                >
+                                  <button
+                                    onClick={() => setViewReport(r)}
+                                    className="min-w-0 flex-1 text-left"
+                                  >
+                                    <p className="text-sm font-semibold truncate">{sub?.title ?? "Sub-milestone"}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {r.quantity} {sub?.unit} · {new Date(r.report_date).toLocaleDateString()}
+                                    </p>
+                                    {r.description && (
+                                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
+                                    )}
+                                  </button>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <StatusBadge status={r.status} />
+                                    {r.status === "rejected" && (
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                        onClick={() => onDeleteReport(r.id)}
+                                        title="Delete report"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </section>
           </>
         )}
