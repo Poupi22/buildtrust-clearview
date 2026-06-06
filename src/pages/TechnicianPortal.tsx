@@ -242,19 +242,39 @@ export default function TechnicianPortal() {
                     </div>
                   );
                 }
+                const byMilestone = new Map<string, any[]>();
+                for (const s of visibleSubs) {
+                  const key = s.milestone_id ?? "_none";
+                  if (!byMilestone.has(key)) byMilestone.set(key, []);
+                  byMilestone.get(key)!.push(s);
+                }
+                const orderedKeys = milestones
+                  .map((m: any) => m.id)
+                  .filter((id: string) => byMilestone.has(id))
+                  .concat(byMilestone.has("_none") ? ["_none"] : []);
                 return (
-                <div className="space-y-2">
-                  {visibleSubs.map((s: any) => {
-                    const m = milestones.find((mm: any) => mm.id === s.milestone_id);
+                <div className="space-y-5">
+                  {orderedKeys.map((mid: string) => {
+                    const m = milestones.find((mm: any) => mm.id === mid);
+                    const items = byMilestone.get(mid)!;
                     return (
-                      <div key={s.id} className="metric-card flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">{s.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {m?.title} · {s.completed_quantity}/{s.target_quantity} {s.unit} · {s.progress_pct}%
-                          </p>
+                      <div key={mid}>
+                        <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2">
+                          {m?.title ?? "Unassigned"} · {items.length}
+                        </p>
+                        <div className="space-y-2">
+                          {items.map((s: any) => (
+                            <div key={s.id} className="metric-card flex items-center gap-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{s.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {s.completed_quantity}/{s.target_quantity} {s.unit} · {s.progress_pct}%
+                                </p>
+                              </div>
+                              <SubmitProgressReportDialog projectId={activeProjectId!} sub={s} />
+                            </div>
+                          ))}
                         </div>
-                        <SubmitProgressReportDialog projectId={activeProjectId!} sub={s} />
                       </div>
                     );
                   })}
