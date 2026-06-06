@@ -290,7 +290,7 @@ export default function TechnicianPortal() {
             </section>
 
             {/* My recent reports */}
-            <section>
+            <section id="recent" className="scroll-mt-20">
               <div className="flex items-center gap-2 mb-3">
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 <h2 className="font-display font-bold text-sm">My recent reports</h2>
