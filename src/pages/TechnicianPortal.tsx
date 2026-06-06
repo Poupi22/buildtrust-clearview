@@ -227,15 +227,13 @@ export default function TechnicianPortal() {
                 </div>
               </div>
               {(() => {
-                const allowedMilestoneIds = new Set(
-                  projectTasks.filter((t: any) => t.milestone_id && !t.sub_milestone_id).map((t: any) => t.milestone_id)
-                );
                 const allowedSubIds = new Set(
-                  projectTasks.filter((t: any) => t.sub_milestone_id).map((t: any) => t.sub_milestone_id)
+                  projectTasks
+                    .filter((t: any) => t.sub_milestone_id && t.status !== "done")
+                    .map((t: any) => t.sub_milestone_id)
                 );
                 const visibleSubs = subs.filter((s: any) =>
-                  Number(s.progress_pct) < 100 &&
-                  (allowedSubIds.has(s.id) || allowedMilestoneIds.has(s.milestone_id))
+                  allowedSubIds.has(s.id) && Number(s.progress_pct) < 100
                 );
                 if (visibleSubs.length === 0) {
                   return (
