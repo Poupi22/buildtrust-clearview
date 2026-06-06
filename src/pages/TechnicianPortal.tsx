@@ -9,10 +9,16 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
-import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2 } from "lucide-react";
+import { LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight, AlertCircle, Trash2, LayoutDashboard, History } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
+import {
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger,
+  SidebarHeader, SidebarFooter,
+} from "@/components/ui/sidebar";
+
 
 const STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "blocked", "done"];
 const STATUS_LABEL: Record<TaskStatus, string> = {
