@@ -225,7 +225,7 @@ export default function TechnicianPortal() {
             </section>
 
             {/* Quick report — list sub-milestones */}
-            <section>
+            <section id="report" className="scroll-mt-20">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" />
