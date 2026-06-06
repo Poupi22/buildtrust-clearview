@@ -86,6 +86,14 @@ export default function TechnicianPortal() {
   const rejectedReports = myReports.filter((r: any) => r.status === "rejected");
   const openTasksCount = projectTasks.filter((t: any) => t.status !== "done").length;
 
+  const activeTasks = projectTasks.filter((t: any) => t.status !== "done");
+  const allowedMilestoneIds = new Set(activeTasks.map((t: any) => t.milestone_id).filter(Boolean));
+  const allowedSubIds = new Set(activeTasks.map((t: any) => t.sub_milestone_id).filter(Boolean));
+  const isAllowedSub = (s: any) =>
+    (allowedSubIds.size > 0 && allowedSubIds.has(s.id)) || allowedMilestoneIds.has(s.milestone_id);
+  const allowedSubs = subs.filter(isAllowedSub);
+  const remainingAllowedSubs = allowedSubs.filter((s: any) => Number(s.progress_pct) < 100);
+
   const navItems: { key: ViewKey; label: string; icon: any; badge?: number }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "tasks", label: "My Tasks", icon: ClipboardList, badge: openTasksCount || undefined },
@@ -146,15 +154,7 @@ export default function TechnicianPortal() {
   );
 
   const ReportSection = () => {
-    const activeTasks = projectTasks.filter((t: any) => t.status !== "done");
-    const allowedMilestoneIds = new Set(activeTasks.map((t: any) => t.milestone_id).filter(Boolean));
-    const allowedSubIds = new Set(activeTasks.map((t: any) => t.sub_milestone_id).filter(Boolean));
-    const visibleSubs = subs.filter((s: any) => {
-      if (Number(s.progress_pct) >= 100) return false;
-      if (allowedSubIds.size > 0 && allowedSubIds.has(s.id)) return true;
-      if (allowedMilestoneIds.has(s.milestone_id)) return true;
-      return false;
-    });
+    const visibleSubs = remainingAllowedSubs;
     const byMilestone = new Map<string, any[]>();
     for (const s of visibleSubs) {
       const key = s.milestone_id ?? "_none";
@@ -304,7 +304,7 @@ export default function TechnicianPortal() {
             <FileText className="h-3.5 w-3.5" /> Sub-milestones
           </div>
           <p className="text-3xl font-display font-bold mt-2">
-            {subs.filter((s: any) => Number(s.progress_pct) < 100).length}
+            {remainingAllowedSubs.length}
           </p>
           <p className="text-xs text-muted-foreground mt-1">remaining to complete</p>
         </button>
