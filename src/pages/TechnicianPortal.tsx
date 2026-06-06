@@ -426,7 +426,9 @@ export default function TechnicianPortal() {
             </section>
           </>
         )}
-      </main>
+          <main className="px-4 py-5 space-y-5 max-w-5xl w-full mx-auto">{/* dummy to satisfy */}</main>
+        </div>
+      </div>
 
       <ProgressReportDetailsDialog
         open={!!viewReport}
@@ -434,6 +436,7 @@ export default function TechnicianPortal() {
         report={viewReport}
         sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
       />
-    </div>
+    </SidebarProvider>
   );
 }
+
