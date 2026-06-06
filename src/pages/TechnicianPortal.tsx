@@ -154,15 +154,7 @@ export default function TechnicianPortal() {
   );
 
   const ReportSection = () => {
-    const activeTasks = projectTasks.filter((t: any) => t.status !== "done");
-    const allowedMilestoneIds = new Set(activeTasks.map((t: any) => t.milestone_id).filter(Boolean));
-    const allowedSubIds = new Set(activeTasks.map((t: any) => t.sub_milestone_id).filter(Boolean));
-    const visibleSubs = subs.filter((s: any) => {
-      if (Number(s.progress_pct) >= 100) return false;
-      if (allowedSubIds.size > 0 && allowedSubIds.has(s.id)) return true;
-      if (allowedMilestoneIds.has(s.milestone_id)) return true;
-      return false;
-    });
+    const visibleSubs = remainingAllowedSubs;
     const byMilestone = new Map<string, any[]>();
     for (const s of visibleSubs) {
       const key = s.milestone_id ?? "_none";
