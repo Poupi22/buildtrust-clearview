@@ -165,7 +165,7 @@ export default function TechnicianPortal() {
             )}
 
             {/* My tasks */}
-            <section>
+            <section id="tasks" className="scroll-mt-20">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-primary" />
