@@ -241,7 +241,7 @@ export default function TechnicianPortal() {
                       <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
                       <p className="text-sm font-semibold">No assigned milestones yet</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Your engineer or administrator must assign you a task on a milestone or sub-milestone before you can report progress.
+                        Your engineer or administrator must assign you a task on a specific sub-milestone before you can report progress on it.
                       </p>
                     </div>
                   );
