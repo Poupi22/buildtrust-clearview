@@ -138,10 +138,12 @@ export default function TechnicianPortal() {
               <p className="text-sm text-muted-foreground">No journal entries yet on this project.</p>
             ) : (
               <div className="space-y-2">
-                {myJournal.slice(0, 15).map((r: any) => {
-                  const editable = ["draft", "rejected"].includes(r.status);
-                  return (
-                  <div key={r.id} className="rounded-lg border p-3 flex items-start justify-between gap-3">
+                {myJournal.slice(0, 15).map((r: any) => (
+                  <button
+                    key={r.id}
+                    onClick={() => setViewJournal(r)}
+                    className="w-full text-left rounded-lg border p-3 flex items-start justify-between gap-3 hover:bg-muted/40 transition"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-muted">
@@ -161,17 +163,11 @@ export default function TechnicianPortal() {
                         {new Date(r.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0">
+                    <div className="shrink-0">
                       <StatusBadge status={r.status} />
-                      {editable && (
-                        <Button size="sm" variant="outline" onClick={() => setEditingJournal(r)}>
-                          Edit &amp; submit
-                        </Button>
-                      )}
                     </div>
-                  </div>
-                  );
-                })}
+                  </button>
+                ))}
               </div>
             )}
           </div>
