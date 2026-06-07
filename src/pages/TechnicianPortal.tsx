@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Settings from "@/pages/Settings";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
