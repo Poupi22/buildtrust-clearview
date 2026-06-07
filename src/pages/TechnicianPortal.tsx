@@ -102,8 +102,8 @@ export default function TechnicianPortal() {
   const navItems: { key: ViewKey; label: string; icon: any; badge?: number }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "tasks", label: "My Tasks", icon: ClipboardList, badge: openTasksCount || undefined },
-    { key: "report", label: "Report Progress", icon: FileText },
     { key: "journal", label: "Journal", icon: NotebookPen },
+    { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
   ];
 
