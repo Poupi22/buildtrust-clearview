@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SettingsPage from "@/pages/Settings";
 import { useAuth } from "@/contexts/AuthContext";
 import {
