@@ -114,54 +114,87 @@ export type Database = {
       }
       daily_reports: {
         Row: {
+          achievements: string | null
           author_id: string
+          challenges: string | null
           created_at: string
           id: string
+          is_published: boolean
           next_activities: string[] | null
+          next_plan: string | null
           notes: string | null
           project_id: string
+          published_at: string | null
+          published_by: string | null
           report_date: string
+          report_type: string
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["report_status"]
           submitted_at: string | null
+          summary: string | null
           tasks_completed: string[] | null
+          title: string | null
           updated_at: string
           weather: string | null
+          week_end: string | null
+          week_start: string | null
           workforce_count: number | null
         }
         Insert: {
+          achievements?: string | null
           author_id: string
+          challenges?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
           next_activities?: string[] | null
+          next_plan?: string | null
           notes?: string | null
           project_id: string
+          published_at?: string | null
+          published_by?: string | null
           report_date: string
+          report_type?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["report_status"]
           submitted_at?: string | null
+          summary?: string | null
           tasks_completed?: string[] | null
+          title?: string | null
           updated_at?: string
           weather?: string | null
+          week_end?: string | null
+          week_start?: string | null
           workforce_count?: number | null
         }
         Update: {
+          achievements?: string | null
           author_id?: string
+          challenges?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
           next_activities?: string[] | null
+          next_plan?: string | null
           notes?: string | null
           project_id?: string
+          published_at?: string | null
+          published_by?: string | null
           report_date?: string
+          report_type?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["report_status"]
           submitted_at?: string | null
+          summary?: string | null
           tasks_completed?: string[] | null
+          title?: string | null
           updated_at?: string
           weather?: string | null
+          week_end?: string | null
+          week_start?: string | null
           workforce_count?: number | null
         }
         Relationships: [
