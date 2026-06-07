@@ -534,7 +534,7 @@ export default function TechnicianPortal() {
               return (
                 <button
                   key={item.key}
-                  onClick={() => setView(item.key)}
+                  onClick={() => onSelectView(item.key)}
                   className={cn(
                     "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium transition-colors relative",
                     active ? "text-primary" : "text-muted-foreground"
