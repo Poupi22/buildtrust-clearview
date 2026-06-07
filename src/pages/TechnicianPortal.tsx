@@ -42,6 +42,7 @@ export default function TechnicianPortal() {
   const [projectId, setProjectId] = useState<string>("");
   const [view, setView] = useState<ViewKey>("overview");
   const [viewReport, setViewReport] = useState<any | null>(null);
+  const [editingJournal, setEditingJournal] = useState<any | null>(null);
   const activeProjectId = projectId || projects[0]?.id;
   const activeProject = projects.find((p: any) => p.id === activeProjectId);
 
@@ -137,7 +138,9 @@ export default function TechnicianPortal() {
               <p className="text-sm text-muted-foreground">No journal entries yet on this project.</p>
             ) : (
               <div className="space-y-2">
-                {myJournal.slice(0, 15).map((r: any) => (
+                {myJournal.slice(0, 15).map((r: any) => {
+                  const editable = ["draft", "rejected"].includes(r.status);
+                  return (
                   <div key={r.id} className="rounded-lg border p-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -158,9 +161,17 @@ export default function TechnicianPortal() {
                         {new Date(r.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <StatusBadge status={r.status} />
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <StatusBadge status={r.status} />
+                      {editable && (
+                        <Button size="sm" variant="outline" onClick={() => setEditingJournal(r)}>
+                          Edit &amp; submit
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -551,6 +562,16 @@ export default function TechnicianPortal() {
         report={viewReport}
         sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
       />
+
+      {editingJournal && (
+        <ReportFormDialog
+          type={editingJournal.report_type}
+          existing={editingJournal}
+          open={!!editingJournal}
+          onOpenChange={(o) => !o && setEditingJournal(null)}
+          trigger={null as any}
+        />
+      )}
     </div>
   );
 }
