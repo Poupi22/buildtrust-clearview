@@ -342,6 +342,8 @@ export default function ClientPortal() {
           </div>
         )}
 
+        {activeTab === "settings" && <SettingsPage />}
+
         <footer className="text-center py-6 border-t">
           <p className="text-xs text-muted-foreground">
             Powered by <span className="font-semibold">BuildTrust</span> · Building Structures. Building Trust.
