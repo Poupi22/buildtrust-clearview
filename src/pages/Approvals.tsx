@@ -94,7 +94,10 @@ export default function Approvals() {
                   <p className="text-xs text-muted-foreground mb-3">
                     Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Actual: ${m.actual_date}`}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" className="flex-1" onClick={() => setViewMilestone(m)}>
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View details
+                    </Button>
                     <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground" onClick={() => decideMilestone(m.id, m.project_id, "approved")} disabled={reviewMilestone.isPending}>
                       Approve & Publish
                     </Button>
