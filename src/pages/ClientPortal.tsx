@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Building2,
   MapPin,
@@ -11,6 +12,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,8 +23,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
+import SettingsPage from "@/pages/Settings";
 
-type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
+type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents" | "settings";
 
 export default function ClientPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
@@ -63,7 +66,21 @@ export default function ClientPortal() {
     { key: "updates", label: "Updates", icon: FileText },
     { key: "photos", label: "Site Photos", icon: Camera },
     { key: "documents", label: "Documents", icon: FileText },
+    { key: "settings", label: "Settings", icon: SettingsIcon },
   ];
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/settings" && activeTab !== "settings") setActiveTab("settings");
+  }, [location.pathname]);
+
+  const onSelectTab = (key: PortalTab) => {
+    setActiveTab(key);
+    if (key === "settings" && location.pathname !== "/settings") navigate("/settings");
+    else if (key !== "settings" && location.pathname === "/settings") navigate("/portal");
+  };
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Loading project...</div>;
@@ -138,7 +155,7 @@ export default function ClientPortal() {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => onSelectTab(tab.key)}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.key
                   ? "border-primary text-primary"
@@ -324,6 +341,8 @@ export default function ClientPortal() {
             ))}
           </div>
         )}
+
+        {activeTab === "settings" && <SettingsPage />}
 
         <footer className="text-center py-6 border-t">
           <p className="text-xs text-muted-foreground">

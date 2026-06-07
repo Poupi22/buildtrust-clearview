@@ -50,6 +50,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/portal" element={<ClientPortal />} />
+        <Route path="/settings" element={<ClientPortal />} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
       </Routes>
     );
