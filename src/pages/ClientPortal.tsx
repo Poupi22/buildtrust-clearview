@@ -66,7 +66,21 @@ export default function ClientPortal() {
     { key: "updates", label: "Updates", icon: FileText },
     { key: "photos", label: "Site Photos", icon: Camera },
     { key: "documents", label: "Documents", icon: FileText },
+    { key: "settings", label: "Settings", icon: SettingsIcon },
   ];
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/settings" && activeTab !== "settings") setActiveTab("settings");
+  }, [location.pathname]);
+
+  const onSelectTab = (key: PortalTab) => {
+    setActiveTab(key);
+    if (key === "settings" && location.pathname !== "/settings") navigate("/settings");
+    else if (key !== "settings" && location.pathname === "/settings") navigate("/portal");
+  };
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Loading project...</div>;
