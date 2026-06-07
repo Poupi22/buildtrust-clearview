@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Building2,
   MapPin,
@@ -11,6 +12,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,8 +23,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
+import SettingsPage from "@/pages/Settings";
 
-type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents";
+type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents" | "settings";
 
 export default function ClientPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
