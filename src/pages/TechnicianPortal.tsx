@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
   AlertCircle, Trash2, History, LayoutDashboard, NotebookPen,
@@ -42,6 +43,7 @@ export default function TechnicianPortal() {
   const [projectId, setProjectId] = useState<string>("");
   const [view, setView] = useState<ViewKey>("overview");
   const [viewReport, setViewReport] = useState<any | null>(null);
+  const [viewJournal, setViewJournal] = useState<any | null>(null);
   const [editingJournal, setEditingJournal] = useState<any | null>(null);
   const activeProjectId = projectId || projects[0]?.id;
   const activeProject = projects.find((p: any) => p.id === activeProjectId);
@@ -102,8 +104,8 @@ export default function TechnicianPortal() {
   const navItems: { key: ViewKey; label: string; icon: any; badge?: number }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "tasks", label: "My Tasks", icon: ClipboardList, badge: openTasksCount || undefined },
-    { key: "report", label: "Report Progress", icon: FileText },
     { key: "journal", label: "Journal", icon: NotebookPen },
+    { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
   ];
 
@@ -138,10 +140,12 @@ export default function TechnicianPortal() {
               <p className="text-sm text-muted-foreground">No journal entries yet on this project.</p>
             ) : (
               <div className="space-y-2">
-                {myJournal.slice(0, 15).map((r: any) => {
-                  const editable = ["draft", "rejected"].includes(r.status);
-                  return (
-                  <div key={r.id} className="rounded-lg border p-3 flex items-start justify-between gap-3">
+                {myJournal.slice(0, 15).map((r: any) => (
+                  <button
+                    key={r.id}
+                    onClick={() => setViewJournal(r)}
+                    className="w-full text-left rounded-lg border p-3 flex items-start justify-between gap-3 hover:bg-muted/40 transition"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-muted">
@@ -161,17 +165,11 @@ export default function TechnicianPortal() {
                         {new Date(r.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0">
+                    <div className="shrink-0">
                       <StatusBadge status={r.status} />
-                      {editable && (
-                        <Button size="sm" variant="outline" onClick={() => setEditingJournal(r)}>
-                          Edit &amp; submit
-                        </Button>
-                      )}
                     </div>
-                  </div>
-                  );
-                })}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -563,6 +561,11 @@ export default function TechnicianPortal() {
         sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
       />
 
+      <JournalEntryDialog
+        entry={viewJournal}
+        onClose={() => setViewJournal(null)}
+      />
+
       {editingJournal && (
         <ReportFormDialog
           type={editingJournal.report_type}
@@ -573,5 +576,60 @@ export default function TechnicianPortal() {
         />
       )}
     </div>
+  );
+}
+
+function JournalEntryDialog({ entry, onClose }: { entry: any | null; onClose: () => void }) {
+  const Section = ({ label, body }: { label: string; body?: string | null }) =>
+    body ? (
+      <div>
+        <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-1">{label}</p>
+        <p className="text-sm whitespace-pre-wrap">{body}</p>
+      </div>
+    ) : null;
+  return (
+    <Dialog open={!!entry} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
+        {entry && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-muted">
+                  {entry.report_type}
+                </span>
+                <span className="truncate">
+                  {entry.title || (entry.report_type === "weekly"
+                    ? `Week ${entry.week_start ?? ""} → ${entry.week_end ?? ""}`
+                    : new Date(entry.report_date).toLocaleDateString())}
+                </span>
+                <StatusBadge status={entry.status} />
+                {entry.is_published && (
+                  <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">
+                    Published
+                  </span>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
+                {entry.weather && <span>Weather: {entry.weather}</span>}
+                {typeof entry.workforce_count === "number" && entry.workforce_count > 0 && (
+                  <span>Workforce: {entry.workforce_count}</span>
+                )}
+                <span>Submitted {new Date(entry.created_at).toLocaleString()}</span>
+              </div>
+              <Section label="Summary" body={entry.summary} />
+              <Section label="Achievements" body={entry.achievements} />
+              <Section label="Challenges / blockers" body={entry.challenges} />
+              <Section
+                label={entry.report_type === "weekly" ? "Plan for next week" : "Next-day activities"}
+                body={entry.next_plan}
+              />
+              <Section label="Internal notes" body={entry.notes} />
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
