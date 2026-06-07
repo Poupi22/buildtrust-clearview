@@ -562,6 +562,16 @@ export default function TechnicianPortal() {
         report={viewReport}
         sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
       />
+
+      {editingJournal && (
+        <ReportFormDialog
+          type={editingJournal.report_type}
+          existing={editingJournal}
+          open={!!editingJournal}
+          onOpenChange={(o) => !o && setEditingJournal(null)}
+          trigger={null as any}
+        />
+      )}
     </div>
   );
 }
