@@ -109,9 +109,21 @@ export default function TechnicianPortal() {
     { key: "journal", label: "Journal", icon: NotebookPen },
     { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
+    { key: "settings", label: "Settings", icon: Settings },
   ];
 
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/settings" && view !== "settings") setView("settings");
+  }, [location.pathname]);
+
+  const onSelectView = (key: ViewKey) => {
+    setView(key);
+    if (key === "settings" && location.pathname !== "/settings") navigate("/settings");
+    else if (key !== "settings" && location.pathname === "/settings") navigate("/technician");
+  };
 
   const JournalSection = () => (
     <section className="space-y-4">
