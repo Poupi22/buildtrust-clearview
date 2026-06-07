@@ -55,11 +55,12 @@ function AppRoutes() {
     );
   }
 
-  // Technician role → field portal only
+  // Technician role → field portal + settings
   if (role === "technician") {
     return (
       <Routes>
         <Route path="/technician" element={<TechnicianPortal />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
       </Routes>
     );
