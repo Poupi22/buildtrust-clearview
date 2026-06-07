@@ -168,16 +168,37 @@ export function useMilestones(projectId?: string) {
   });
 }
 
-// ---------------- Daily Reports ----------------
-export function useReports(projectId?: string) {
+// ---------------- Project Reports (daily journal + weekly client reports) ----------------
+export type ReportType = "daily" | "weekly";
+
+export interface ReportInput {
+  id?: string;
+  project_id: string;
+  report_type: ReportType;
+  report_date: string;
+  week_start?: string | null;
+  week_end?: string | null;
+  title?: string | null;
+  summary?: string | null;
+  achievements?: string | null;
+  challenges?: string | null;
+  next_plan?: string | null;
+  weather?: string | null;
+  workforce_count?: number | null;
+  notes?: string | null;
+  status?: "draft" | "submitted";
+}
+
+export function useReports(projectId?: string, reportType?: ReportType) {
   return useQuery({
-    queryKey: ["reports", projectId ?? "all"],
+    queryKey: ["reports", projectId ?? "all", reportType ?? "all"],
     queryFn: async () => {
       let q = supabase
         .from("daily_reports")
         .select("*")
         .order("report_date", { ascending: false });
       if (projectId) q = q.eq("project_id", projectId);
+      if (reportType) q = q.eq("report_type", reportType);
       const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
@@ -189,23 +210,28 @@ export function useCreateReport() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: {
-      project_id: string;
-      report_date: string;
-      weather?: string;
-      workforce_count?: number;
-      tasks_completed?: string[];
-      notes?: string;
-      status?: "draft" | "submitted";
-    }) => {
+    mutationFn: async (input: ReportInput) => {
       if (!user) throw new Error("Not authenticated");
+      const status = input.status ?? "submitted";
       const { data, error } = await supabase
         .from("daily_reports")
         .insert({
-          ...input,
+          project_id: input.project_id,
+          report_type: input.report_type,
+          report_date: input.report_date,
+          week_start: input.week_start ?? null,
+          week_end: input.week_end ?? null,
+          title: input.title ?? null,
+          summary: input.summary ?? null,
+          achievements: input.achievements ?? null,
+          challenges: input.challenges ?? null,
+          next_plan: input.next_plan ?? null,
+          weather: input.weather ?? null,
+          workforce_count: input.workforce_count ?? 0,
+          notes: input.notes ?? null,
           author_id: user.id,
-          status: input.status ?? "draft",
-          submitted_at: input.status === "submitted" ? new Date().toISOString() : null,
+          status,
+          submitted_at: status === "submitted" ? new Date().toISOString() : null,
         })
         .select()
         .single();
@@ -216,21 +242,80 @@ export function useCreateReport() {
   });
 }
 
+export function useUpdateReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<ReportInput> & { id: string }) => {
+      const { id, ...patch } = input as any;
+      const { error } = await supabase
+        .from("daily_reports")
+        .update({
+          ...patch,
+          submitted_at: patch.status === "submitted" ? new Date().toISOString() : undefined,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reports"] }),
+  });
+}
+
+export function useDeleteReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("daily_reports").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reports"] }),
+  });
+}
+
+export function usePublishWeeklyReport() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (input: { id: string; project_id: string }) => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("daily_reports")
+        .update({
+          status: "approved",
+          is_published: true,
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user.id,
+        })
+        .eq("id", input.id);
+      if (error) throw error;
+      await supabase.from("approvals").insert({
+        project_id: input.project_id,
+        entity_type: "daily_report",
+        entity_id: input.id,
+        decision: "approved",
+        reviewer_id: user.id,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["reports"] });
+      qc.invalidateQueries({ queryKey: ["approvals"] });
+    },
+  });
+}
+
 export function useReviewReport() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (input: { id: string; project_id: string; decision: "approved" | "rejected" }) => {
       if (!user) throw new Error("Not authenticated");
-      const newStatus = input.decision === "approved" ? "published" : "rejected";
-      const { error } = await supabase
-        .from("daily_reports")
-        .update({
-          status: newStatus,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user.id,
-        })
-        .eq("id", input.id);
+      const patch: any = {
+        status: input.decision === "approved" ? "approved" : "rejected",
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user.id,
+      };
+      const { error } = await supabase.from("daily_reports").update(patch).eq("id", input.id);
       if (error) throw error;
       await supabase.from("approvals").insert({
         project_id: input.project_id,
