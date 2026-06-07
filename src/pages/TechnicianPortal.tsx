@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
+import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
-  AlertCircle, Trash2, History, LayoutDashboard,
+  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -32,7 +33,7 @@ const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-destructive/15 text-destructive",
 };
 
-type ViewKey = "overview" | "tasks" | "report" | "recent";
+type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent";
 
 export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
@@ -98,8 +99,38 @@ export default function TechnicianPortal() {
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "tasks", label: "My Tasks", icon: ClipboardList, badge: openTasksCount || undefined },
     { key: "report", label: "Report Progress", icon: FileText },
+    { key: "journal", label: "Journal", icon: NotebookPen },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
   ];
+
+  const JournalSection = () => (
+    <section className="space-y-4">
+      <div>
+        <h2 className="font-display font-bold text-lg">Project journal</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Submit your daily site report (internal) and weekly summary (sent to the engineer for validation, then visible to the client).
+        </p>
+      </div>
+      {activeProjectId ? (
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="metric-card">
+            <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Daily</p>
+            <p className="font-display font-bold mt-1">Today's site report</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-3">Workforce, weather, what happened today. Internal only.</p>
+            <ReportFormDialog type="daily" defaultProjectId={activeProjectId} />
+          </div>
+          <div className="metric-card">
+            <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Weekly</p>
+            <p className="font-display font-bold mt-1">This week's client report</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-3">Summary, achievements, next-week plan. Reviewed before publication.</p>
+            <ReportFormDialog type="weekly" defaultProjectId={activeProjectId} />
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Select a project first.</p>
+      )}
+    </section>
+  );
 
   const TasksSection = () => (
     <section>
@@ -470,6 +501,7 @@ export default function TechnicianPortal() {
           ) : view === "overview" ? <OverviewSection />
             : view === "tasks" ? <TasksSection />
             : view === "report" ? <ReportSection />
+            : view === "journal" ? <JournalSection />
             : <RecentSection />}
         </main>
       </div>

@@ -241,30 +241,42 @@ export default function ClientPortal() {
               </>
             )}
 
-            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Daily reports updated {fmt(lastReportUpdate)}</p>}
+            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Weekly reports updated {fmt(lastReportUpdate)}</p>}
             {publishedReports.length === 0 && publishedProgress.length === 0 ? (
               <div className="metric-card text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                 <h3 className="font-display font-bold">No Published Updates Yet</h3>
                 <p className="text-sm text-muted-foreground mt-1">Updates will appear here once approved by the project manager.</p>
               </div>
-            ) : publishedReports.map((r) => (
+            ) : publishedReports.map((r: any) => (
               <div key={r.id} className="metric-card">
                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display font-bold text-sm">{r.report_date}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-display font-bold text-sm">
+                      {r.title || (r.week_start && r.week_end ? `Week of ${r.week_start} → ${r.week_end}` : r.report_date)}
+                    </span>
                     <StatusBadge status={r.status} />
                   </div>
-                  {r.reviewed_at && <span className="text-xs text-muted-foreground">Published {fmt(r.reviewed_at)}</span>}
+                  {(r.published_at || r.reviewed_at) && (
+                    <span className="text-xs text-muted-foreground">Published {fmt(r.published_at ?? r.reviewed_at)}</span>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">{r.weather ?? "—"}</p>
-                <p className="text-sm text-muted-foreground">Workforce on site: {r.workforce_count}</p>
-                {r.tasks_completed && r.tasks_completed.length > 0 && (
+                {r.summary && (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold text-foreground mb-1">Summary</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.summary}</p>
+                  </div>
+                )}
+                {r.achievements && (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold text-foreground mb-1">Work Completed</p>
-                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
-                      {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                    </ul>
+                    <p className="text-xs font-semibold text-foreground mb-1">Achievements</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.achievements}</p>
+                  </div>
+                )}
+                {r.next_plan && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">Plan for next week</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.next_plan}</p>
                   </div>
                 )}
               </div>

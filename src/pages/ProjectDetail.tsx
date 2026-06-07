@@ -15,7 +15,7 @@ import {
   useProjectMembers, useUpdateMediaCaption,
 } from "@/hooks/useBuildTrust";
 import { useAuth } from "@/contexts/AuthContext";
-import { NewReportDialog } from "@/components/dialogs/NewReportDialog";
+import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { NewIssueDialog } from "@/components/dialogs/NewIssueDialog";
 import { NewMilestoneDialog } from "@/components/dialogs/NewMilestoneDialog";
 import { NewSubMilestoneDialog } from "@/components/dialogs/NewSubMilestoneDialog";
@@ -234,28 +234,23 @@ export default function ProjectDetail() {
 
       {activeTab === "reports" && (
         <div className="space-y-3">
-          <div className="flex justify-end">
-            <NewReportDialog defaultProjectId={project.id} />
+          <div className="flex justify-end gap-2">
+            <ReportFormDialog type="daily" defaultProjectId={project.id} />
+            <ReportFormDialog type="weekly" defaultProjectId={project.id} />
           </div>
           {reports.length === 0 ? (
             <p className="text-sm text-muted-foreground">No reports yet.</p>
-          ) : reports.map((r) => (
+          ) : reports.map((r: any) => (
             <div key={r.id} className="metric-card">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">{r.report_date}</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded font-bold">{r.report_type ?? "daily"}</span>
+                  <span className="font-semibold text-sm">{r.title || r.report_date}</span>
                   <StatusBadge status={r.status} />
+                  {r.is_published && <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Published</span>}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">{r.weather ?? "—"} · {r.workforce_count} workers</p>
-              {r.tasks_completed && r.tasks_completed.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-xs font-medium text-foreground">Tasks completed:</p>
-                  <ul className="text-xs text-muted-foreground list-disc list-inside">
-                    {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                  </ul>
-                </div>
-              )}
+              {r.summary && <p className="text-sm text-muted-foreground line-clamp-2">{r.summary}</p>}
             </div>
           ))}
         </div>
