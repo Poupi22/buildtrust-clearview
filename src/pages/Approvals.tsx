@@ -16,7 +16,7 @@ export default function Approvals() {
   const reviewProgress = useReviewProgressReport();
   const [viewProgress, setViewProgress] = useState<any | null>(null);
 
-  const pendingReports = reports.filter((r) => r.status === "submitted" || r.status === "under-review");
+  const pendingReports = reports.filter((r: any) => r.report_type === "weekly" && (r.status === "submitted" || r.status === "under-review"));
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
   const pendingProgress = progress.filter((p: any) => p.status === "submitted");
   const totalPending = pendingReports.length + pendingMilestones.length + pendingProgress.length;
@@ -145,25 +145,22 @@ export default function Approvals() {
           {pendingReports.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" /> Daily Reports ({pendingReports.length})
+                <FileText className="h-4 w-4 text-primary" /> Weekly Reports ({pendingReports.length})
               </h2>
-              {pendingReports.map((r) => (
+              {pendingReports.map((r: any) => (
                 <div key={r.id} className="metric-card">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{r.report_date}</span>
+                  <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold">{r.title || `Week of ${r.week_start} → ${r.week_end}`}</span>
                       <StatusBadge status={r.status} />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-1">{r.weather ?? "—"} · {r.workforce_count} workers</p>
-                  {r.tasks_completed && r.tasks_completed.length > 0 && (
-                    <ul className="text-xs text-muted-foreground list-disc list-inside mb-3">
-                      {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                    </ul>
-                  )}
+                  {r.summary && <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">{r.summary}</p>}
+                  {r.achievements && <p className="text-xs text-muted-foreground mb-1"><strong>Achievements:</strong> {r.achievements}</p>}
+                  {r.challenges && <p className="text-xs text-muted-foreground mb-3"><strong>Challenges:</strong> {r.challenges}</p>}
                   <div className="flex gap-2">
                     <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground" onClick={() => decideReport(r.id, r.project_id, "approved")} disabled={reviewReport.isPending}>
-                      Approve & Publish
+                      Approve &amp; Publish
                     </Button>
                     <Button variant="destructive" className="flex-1" onClick={() => decideReport(r.id, r.project_id, "rejected")} disabled={reviewReport.isPending}>
                       Reject

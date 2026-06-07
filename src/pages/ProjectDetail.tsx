@@ -251,14 +251,6 @@ export default function ProjectDetail() {
                 </div>
               </div>
               {r.summary && <p className="text-sm text-muted-foreground line-clamp-2">{r.summary}</p>}
-              {r.tasks_completed && r.tasks_completed.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-xs font-medium text-foreground">Tasks completed:</p>
-                  <ul className="text-xs text-muted-foreground list-disc list-inside">
-                    {r.tasks_completed.map((t, i) => <li key={i}>{t}</li>)}
-                  </ul>
-                </div>
-              )}
             </div>
           ))}
         </div>
