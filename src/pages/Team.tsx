@@ -162,7 +162,7 @@ function useAllUsers() {
   });
 }
 
-function UserManagementSection() {
+export function UserManagementSection() {
   const qc = useQueryClient();
   const { data: users = [], isLoading, refetch } = useAllUsers();
   const [search, setSearch] = useState("");

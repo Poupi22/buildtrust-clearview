@@ -11,11 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Download, Shield, Bell, User, Building2, Workflow, FileText, Users as UsersIcon, ScrollText } from "lucide-react";
 import { toast } from "sonner";
-import UserManagement from "./Team";
-
-// Re-export the existing UserManagement section from Team.tsx via a thin wrapper.
-// We import the SettingsPage default content's user section by re-using Team's exported component.
-import { SettingsPage as LegacyTeamSettings } from "./Team";
+import { UserManagementSection } from "./Team";
 
 export default function Settings() {
   const isAdmin = useIsAdmin();
@@ -61,7 +57,7 @@ export default function Settings() {
           <>
             <TabsContent value="company"><CompanySection /></TabsContent>
             <TabsContent value="workflow"><WorkflowSection /></TabsContent>
-            <TabsContent value="users"><LegacyTeamSettings /></TabsContent>
+            <TabsContent value="users"><UserManagementSection /></TabsContent>
             <TabsContent value="audit"><AuditLogSection /></TabsContent>
             <TabsContent value="export"><DataExportSection /></TabsContent>
           </>
