@@ -1,20 +1,27 @@
 import { useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText, ClipboardCheck, Eye } from "lucide-react";
-import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
+import { CheckSquare, Flag, FileText, ClipboardCheck, Eye, Pencil } from "lucide-react";
+import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones, useProjects } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
+import { WeeklyReportDetailsDialog } from "@/components/dialogs/WeeklyReportDetailsDialog";
+import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
   const { data: milestones = [] } = useMilestones();
   const { data: progress = [] } = useProgressReports();
   const { data: subs = [] } = useSubMilestones(undefined);
+  const { data: projects = [] } = useProjects();
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
   const reviewProgress = useReviewProgressReport();
   const [viewProgress, setViewProgress] = useState<any | null>(null);
+  const [viewReport, setViewReport] = useState<any | null>(null);
+  const [editReport, setEditReport] = useState<any | null>(null);
+  const [viewMilestone, setViewMilestone] = useState<any | null>(null);
 
   const pendingReports = reports.filter((r: any) => r.report_type === "weekly" && (r.status === "submitted" || r.status === "under-review"));
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
@@ -87,7 +94,10 @@ export default function Approvals() {
                   <p className="text-xs text-muted-foreground mb-3">
                     Planned: {m.planned_date ?? "—"}{m.actual_date && ` · Actual: ${m.actual_date}`}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" className="flex-1" onClick={() => setViewMilestone(m)}>
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View details
+                    </Button>
                     <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground" onClick={() => decideMilestone(m.id, m.project_id, "approved")} disabled={reviewMilestone.isPending}>
                       Approve & Publish
                     </Button>
@@ -158,7 +168,13 @@ export default function Approvals() {
                   {r.summary && <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">{r.summary}</p>}
                   {r.achievements && <p className="text-xs text-muted-foreground mb-1"><strong>Achievements:</strong> {r.achievements}</p>}
                   {r.challenges && <p className="text-xs text-muted-foreground mb-3"><strong>Challenges:</strong> {r.challenges}</p>}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" className="flex-1" onClick={() => setViewReport(r)}>
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View details
+                    </Button>
+                    <Button variant="outline" className="flex-1" onClick={() => setEditReport(r)}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                    </Button>
                     <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground" onClick={() => decideReport(r.id, r.project_id, "approved")} disabled={reviewReport.isPending}>
                       Approve &amp; Publish
                     </Button>
@@ -172,6 +188,65 @@ export default function Approvals() {
           )}
         </div>
       )}
+
+      <WeeklyReportDetailsDialog
+        open={!!viewReport}
+        onOpenChange={(o) => !o && setViewReport(null)}
+        report={viewReport}
+      />
+
+      {editReport && (
+        <ReportFormDialog
+          type="weekly"
+          existing={editReport}
+          defaultProjectId={editReport.project_id}
+          trigger={null as any}
+          open={!!editReport}
+          onOpenChange={(o) => !o && setEditReport(null)}
+        />
+      )}
+
+      <Dialog open={!!viewMilestone} onOpenChange={(o) => !o && setViewMilestone(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              <span>{viewMilestone?.title}</span>
+              {viewMilestone && <StatusBadge status={viewMilestone.status} />}
+            </DialogTitle>
+          </DialogHeader>
+          {viewMilestone && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Progress</p>
+                  <p className="font-display font-bold text-lg">{viewMilestone.progress}%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Contribution</p>
+                  <p className="font-display font-bold text-lg">{viewMilestone.contribution_pct}%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Planned date</p>
+                  <p>{viewMilestone.planned_date ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Actual date</p>
+                  <p>{viewMilestone.actual_date ?? "—"}</p>
+                </div>
+              </div>
+              {viewMilestone.description && (
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Description</p>
+                  <p className="whitespace-pre-wrap">{viewMilestone.description}</p>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Project: {projects.find((p: any) => p.id === viewMilestone.project_id)?.title ?? "—"}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <ProgressReportDetailsDialog
         open={!!viewProgress}
