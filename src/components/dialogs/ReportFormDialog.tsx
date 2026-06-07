@@ -214,12 +214,25 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
           )}
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => submit("draft")} disabled={create.isPending || update.isPending}>
-            Save draft
-          </Button>
-          <Button onClick={() => submit("submitted")} disabled={create.isPending || update.isPending}>
-            {type === "weekly" ? "Submit for review" : "Submit"}
-          </Button>
+          {existing ? (
+            <>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={create.isPending || update.isPending}>
+                Cancel
+              </Button>
+              <Button onClick={() => submit(existing.status === "draft" ? "draft" : "submitted")} disabled={create.isPending || update.isPending}>
+                Edit
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => submit("draft")} disabled={create.isPending || update.isPending}>
+                Save draft
+              </Button>
+              <Button onClick={() => submit("submitted")} disabled={create.isPending || update.isPending}>
+                {type === "weekly" ? "Submit for review" : "Submit"}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
