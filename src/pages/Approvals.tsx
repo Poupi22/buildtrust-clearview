@@ -1,20 +1,27 @@
 import { useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CheckSquare, Flag, FileText, ClipboardCheck, Eye } from "lucide-react";
-import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones } from "@/hooks/useBuildTrust";
+import { CheckSquare, Flag, FileText, ClipboardCheck, Eye, Pencil } from "lucide-react";
+import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProgressReports, useReviewProgressReport, useSubMilestones, useProjects } from "@/hooks/useBuildTrust";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
+import { WeeklyReportDetailsDialog } from "@/components/dialogs/WeeklyReportDetailsDialog";
+import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Approvals() {
   const { data: reports = [], isLoading } = useReports();
   const { data: milestones = [] } = useMilestones();
   const { data: progress = [] } = useProgressReports();
   const { data: subs = [] } = useSubMilestones(undefined);
+  const { data: projects = [] } = useProjects();
   const reviewReport = useReviewReport();
   const reviewMilestone = useReviewMilestone();
   const reviewProgress = useReviewProgressReport();
   const [viewProgress, setViewProgress] = useState<any | null>(null);
+  const [viewReport, setViewReport] = useState<any | null>(null);
+  const [editReport, setEditReport] = useState<any | null>(null);
+  const [viewMilestone, setViewMilestone] = useState<any | null>(null);
 
   const pendingReports = reports.filter((r: any) => r.report_type === "weekly" && (r.status === "submitted" || r.status === "under-review"));
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
