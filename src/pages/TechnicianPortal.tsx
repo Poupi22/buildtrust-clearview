@@ -48,6 +48,8 @@ export default function TechnicianPortal() {
   const { data: milestones = [] } = useMilestones(activeProjectId);
   const { data: subs = [] } = useSubMilestones(activeProjectId);
   const { data: myReports = [] } = useProgressReports({ projectId: activeProjectId, mineOnly: true });
+  const { data: journalReports = [] } = useReports(activeProjectId);
+  const myJournal = journalReports.filter((r: any) => r.author_id === user?.id);
   const { data: tasks = [] } = useMyTasks();
   const updateStatus = useUpdateTaskStatus();
   const deleteReport = useDeleteProgressReport();
