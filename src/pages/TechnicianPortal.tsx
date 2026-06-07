@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
@@ -109,6 +109,8 @@ export default function TechnicianPortal() {
     { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
   ];
+
+  const location = useLocation();
 
   const JournalSection = () => (
     <section className="space-y-4">
@@ -468,6 +470,18 @@ export default function TechnicianPortal() {
               </button>
             );
           })}
+          <Link
+            to="/settings"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              location.pathname === "/settings"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            <span className="flex-1 text-left">Settings</span>
+          </Link>
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
@@ -478,9 +492,6 @@ export default function TechnicianPortal() {
               <p className="text-sm font-medium truncate">{profile?.full_name || "User"}</p>
               <p className="text-xs text-muted-foreground truncate">Technician</p>
             </div>
-            <Link to="/settings" className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Settings">
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </Link>
             <button onClick={signOut} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
               <LogOut className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -510,9 +521,6 @@ export default function TechnicianPortal() {
               </Select>
             )}
             {activeProject && <StatusBadge status={activeProject.status} />}
-            <Link to="/settings" className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Settings">
-              <Settings className="h-5 w-5 text-muted-foreground" />
-            </Link>
             <NotificationBell />
           </div>
         </header>
