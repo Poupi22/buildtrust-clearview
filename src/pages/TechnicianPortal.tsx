@@ -521,9 +521,6 @@ export default function TechnicianPortal() {
               </Select>
             )}
             {activeProject && <StatusBadge status={activeProject.status} />}
-            <Link to="/settings" className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Settings">
-              <Settings className="h-5 w-5 text-muted-foreground" />
-            </Link>
             <NotificationBell />
           </div>
         </header>
