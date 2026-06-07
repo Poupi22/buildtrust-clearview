@@ -470,6 +470,18 @@ export default function TechnicianPortal() {
               </button>
             );
           })}
+          <Link
+            to="/settings"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              location.pathname === "/settings"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            <span className="flex-1 text-left">Settings</span>
+          </Link>
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
