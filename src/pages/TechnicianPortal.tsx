@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitProgressReportDialog } from "@/components/dialogs/SubmitProgressReportDialog";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
 import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
   AlertCircle, Trash2, History, LayoutDashboard, NotebookPen,
