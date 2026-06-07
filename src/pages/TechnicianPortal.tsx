@@ -478,6 +478,9 @@ export default function TechnicianPortal() {
               <p className="text-sm font-medium truncate">{profile?.full_name || "User"}</p>
               <p className="text-xs text-muted-foreground truncate">Technician</p>
             </div>
+            <Link to="/settings" className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Settings">
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </Link>
             <button onClick={signOut} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
               <LogOut className="h-4 w-4 text-muted-foreground" />
             </button>
