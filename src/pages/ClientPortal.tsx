@@ -241,7 +241,7 @@ export default function ClientPortal() {
               </>
             )}
 
-            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Daily reports updated {fmt(lastReportUpdate)}</p>}
+            {lastReportUpdate && <p className="text-xs text-muted-foreground mt-3">Weekly reports updated {fmt(lastReportUpdate)}</p>}
             {publishedReports.length === 0 && publishedProgress.length === 0 ? (
               <div className="metric-card text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
