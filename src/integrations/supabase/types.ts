@@ -112,6 +112,44 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          auto_publish_on_approval: boolean
+          company_id: string
+          created_at: string
+          default_milestone_template: string | null
+          default_report_template: string | null
+          require_dual_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          auto_publish_on_approval?: boolean
+          company_id: string
+          created_at?: string
+          default_milestone_template?: string | null
+          default_report_template?: string | null
+          require_dual_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          auto_publish_on_approval?: boolean
+          company_id?: string
+          created_at?: string
+          default_milestone_template?: string | null
+          default_report_template?: string | null
+          require_dual_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_reports: {
         Row: {
           achievements: string | null
@@ -748,6 +786,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          approval_signature: string | null
+          created_at: string
+          notify_media_published: boolean
+          notify_milestone_updated: boolean
+          notify_new_issue: boolean
+          notify_report_approved: boolean
+          notify_report_rejected: boolean
+          notify_task_assigned: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_signature?: string | null
+          created_at?: string
+          notify_media_published?: boolean
+          notify_milestone_updated?: boolean
+          notify_new_issue?: boolean
+          notify_report_approved?: boolean
+          notify_report_rejected?: boolean
+          notify_task_assigned?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_signature?: string | null
+          created_at?: string
+          notify_media_published?: boolean
+          notify_milestone_updated?: boolean
+          notify_new_issue?: boolean
+          notify_report_approved?: boolean
+          notify_report_rejected?: boolean
+          notify_task_assigned?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
