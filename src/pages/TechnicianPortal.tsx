@@ -42,6 +42,7 @@ export default function TechnicianPortal() {
   const [projectId, setProjectId] = useState<string>("");
   const [view, setView] = useState<ViewKey>("overview");
   const [viewReport, setViewReport] = useState<any | null>(null);
+  const [viewJournal, setViewJournal] = useState<any | null>(null);
   const [editingJournal, setEditingJournal] = useState<any | null>(null);
   const activeProjectId = projectId || projects[0]?.id;
   const activeProject = projects.find((p: any) => p.id === activeProjectId);
