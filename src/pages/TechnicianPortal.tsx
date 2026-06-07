@@ -36,7 +36,7 @@ const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-destructive/15 text-destructive",
 };
 
-type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent";
+type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent" | "settings";
 
 export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
