@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
@@ -14,7 +15,7 @@ import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
-  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen,
+  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
