@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import SettingsPage from "@/pages/Settings";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
@@ -36,7 +37,7 @@ const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-destructive/15 text-destructive",
 };
 
-type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent";
+type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent" | "settings";
 
 export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
@@ -108,9 +109,21 @@ export default function TechnicianPortal() {
     { key: "journal", label: "Journal", icon: NotebookPen },
     { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
+    { key: "settings", label: "Settings", icon: Settings },
   ];
 
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/settings" && view !== "settings") setView("settings");
+  }, [location.pathname]);
+
+  const onSelectView = (key: ViewKey) => {
+    setView(key);
+    if (key === "settings" && location.pathname !== "/settings") navigate("/settings");
+    else if (key !== "settings" && location.pathname === "/settings") navigate("/technician");
+  };
 
   const JournalSection = () => (
     <section className="space-y-4">
@@ -449,7 +462,7 @@ export default function TechnicianPortal() {
             return (
               <button
                 key={item.key}
-                onClick={() => setView(item.key)}
+                onClick={() => onSelectView(item.key)}
                 className={cn(
                   "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   active
@@ -470,18 +483,6 @@ export default function TechnicianPortal() {
               </button>
             );
           })}
-          <Link
-            to="/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-              location.pathname === "/settings"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <Settings className="h-4 w-4" />
-            <span className="flex-1 text-left">Settings</span>
-          </Link>
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
@@ -533,7 +534,7 @@ export default function TechnicianPortal() {
               return (
                 <button
                   key={item.key}
-                  onClick={() => setView(item.key)}
+                  onClick={() => onSelectView(item.key)}
                   className={cn(
                     "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium transition-colors relative",
                     active ? "text-primary" : "text-muted-foreground"
@@ -553,7 +554,8 @@ export default function TechnicianPortal() {
         </nav>
 
         <main className="flex-1 px-4 py-6 lg:px-8 pb-24 lg:pb-8 max-w-5xl w-full mx-auto">
-          {projects.length === 0 ? (
+          {view === "settings" ? <SettingsPage />
+            : projects.length === 0 ? (
             <div className="metric-card text-center py-12">
               <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
               <h3 className="font-display font-bold">No projects assigned</h3>

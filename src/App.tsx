@@ -60,7 +60,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/technician" element={<TechnicianPortal />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<TechnicianPortal />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
       </Routes>
     );
