@@ -115,20 +115,56 @@ export default function TechnicianPortal() {
         </p>
       </div>
       {activeProjectId ? (
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div className="metric-card">
-            <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Daily</p>
-            <p className="font-display font-bold mt-1">Today's site report</p>
-            <p className="text-xs text-muted-foreground mt-1 mb-3">Workforce, weather, what happened today. Internal only.</p>
-            <ReportFormDialog type="daily" defaultProjectId={activeProjectId} />
+        <>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="metric-card">
+              <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Daily</p>
+              <p className="font-display font-bold mt-1">Today's site report</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-3">Workforce, weather, what happened today. Internal only.</p>
+              <ReportFormDialog type="daily" defaultProjectId={activeProjectId} />
+            </div>
+            <div className="metric-card">
+              <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Weekly</p>
+              <p className="font-display font-bold mt-1">This week's client report</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-3">Summary, achievements, next-week plan. Reviewed before publication.</p>
+              <ReportFormDialog type="weekly" defaultProjectId={activeProjectId} />
+            </div>
           </div>
-          <div className="metric-card">
-            <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Weekly</p>
-            <p className="font-display font-bold mt-1">This week's client report</p>
-            <p className="text-xs text-muted-foreground mt-1 mb-3">Summary, achievements, next-week plan. Reviewed before publication.</p>
-            <ReportFormDialog type="weekly" defaultProjectId={activeProjectId} />
+
+          <div>
+            <h3 className="font-display font-bold text-base mb-2">My recent entries</h3>
+            {myJournal.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No journal entries yet on this project.</p>
+            ) : (
+              <div className="space-y-2">
+                {myJournal.slice(0, 15).map((r: any) => (
+                  <div key={r.id} className="rounded-lg border p-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-muted">
+                          {r.report_type}
+                        </span>
+                        <span className="text-sm font-semibold truncate">
+                          {r.title || (r.report_type === "weekly"
+                            ? `Week ${r.week_start ?? ""} → ${r.week_end ?? ""}`
+                            : new Date(r.report_date).toLocaleDateString())}
+                        </span>
+                      </div>
+                      {r.summary && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.summary}</p>
+                      )}
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {r.report_type === "weekly" && r.is_published ? "Published to client · " : ""}
+                        {new Date(r.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        </>
       ) : (
         <p className="text-sm text-muted-foreground">Select a project first.</p>
       )}
