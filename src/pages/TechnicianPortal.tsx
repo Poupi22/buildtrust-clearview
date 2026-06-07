@@ -110,6 +110,8 @@ export default function TechnicianPortal() {
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
   ];
 
+  const location = useLocation();
+
   const JournalSection = () => (
     <section className="space-y-4">
       <div>
