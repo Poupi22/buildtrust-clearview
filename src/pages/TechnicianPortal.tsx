@@ -560,6 +560,11 @@ export default function TechnicianPortal() {
         sub={viewReport ? subs.find((s: any) => s.id === viewReport.sub_milestone_id) : undefined}
       />
 
+      <JournalEntryDialog
+        entry={viewJournal}
+        onClose={() => setViewJournal(null)}
+      />
+
       {editingJournal && (
         <ReportFormDialog
           type={editingJournal.report_type}
@@ -570,5 +575,60 @@ export default function TechnicianPortal() {
         />
       )}
     </div>
+  );
+}
+
+function JournalEntryDialog({ entry, onClose }: { entry: any | null; onClose: () => void }) {
+  const Section = ({ label, body }: { label: string; body?: string | null }) =>
+    body ? (
+      <div>
+        <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-1">{label}</p>
+        <p className="text-sm whitespace-pre-wrap">{body}</p>
+      </div>
+    ) : null;
+  return (
+    <Dialog open={!!entry} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
+        {entry && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-muted">
+                  {entry.report_type}
+                </span>
+                <span className="truncate">
+                  {entry.title || (entry.report_type === "weekly"
+                    ? `Week ${entry.week_start ?? ""} → ${entry.week_end ?? ""}`
+                    : new Date(entry.report_date).toLocaleDateString())}
+                </span>
+                <StatusBadge status={entry.status} />
+                {entry.is_published && (
+                  <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">
+                    Published
+                  </span>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
+                {entry.weather && <span>Weather: {entry.weather}</span>}
+                {typeof entry.workforce_count === "number" && entry.workforce_count > 0 && (
+                  <span>Workforce: {entry.workforce_count}</span>
+                )}
+                <span>Submitted {new Date(entry.created_at).toLocaleString()}</span>
+              </div>
+              <Section label="Summary" body={entry.summary} />
+              <Section label="Achievements" body={entry.achievements} />
+              <Section label="Challenges / blockers" body={entry.challenges} />
+              <Section
+                label={entry.report_type === "weekly" ? "Plan for next week" : "Next-day activities"}
+                body={entry.next_plan}
+              />
+              <Section label="Internal notes" body={entry.notes} />
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
