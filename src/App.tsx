@@ -83,6 +83,7 @@ function AppRoutes() {
         <Route path="/approvals" element={<Approvals />} />
         <Route path="/team" element={<Team />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/manual" element={<Manual />} />
       </Route>
       <Route path="/portal" element={<ClientPortal />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
