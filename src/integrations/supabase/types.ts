@@ -787,10 +787,38 @@ export type Database = {
           },
         ]
       }
+      translations: {
+        Row: {
+          created_at: string
+          en: string
+          fr: string
+          id: string
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          en: string
+          fr: string
+          id?: string
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          en?: string
+          fr?: string
+          id?: string
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           approval_signature: string | null
           created_at: string
+          language: string
           notify_media_published: boolean
           notify_milestone_updated: boolean
           notify_new_issue: boolean
@@ -803,6 +831,7 @@ export type Database = {
         Insert: {
           approval_signature?: string | null
           created_at?: string
+          language?: string
           notify_media_published?: boolean
           notify_milestone_updated?: boolean
           notify_new_issue?: boolean
@@ -815,6 +844,7 @@ export type Database = {
         Update: {
           approval_signature?: string | null
           created_at?: string
+          language?: string
           notify_media_published?: boolean
           notify_milestone_updated?: boolean
           notify_new_issue?: boolean
