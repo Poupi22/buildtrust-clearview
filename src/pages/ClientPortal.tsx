@@ -347,6 +347,7 @@ export default function ClientPortal() {
         )}
 
         {activeTab === "settings" && <SettingsPage />}
+        {activeTab === "manual" && <Manual />}
 
         <footer className="text-center py-6 border-t">
           <p className="text-xs text-muted-foreground">
