@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -8,25 +9,29 @@ import {
   CheckSquare,
   Users,
   Settings,
+  BookOpen,
   LogOut,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Projects", icon: FolderKanban, path: "/projects" },
-  { label: "Reports", icon: FileText, path: "/reports" },
-  { label: "Issues", icon: AlertTriangle, path: "/issues" },
-  { label: "Approvals", icon: CheckSquare, path: "/approvals" },
-  { label: "Team", icon: Users, path: "/team" },
-  { label: "Settings", icon: Settings, path: "/settings" },
+  { key: "dashboard", icon: LayoutDashboard, path: "/" },
+  { key: "projects", icon: FolderKanban, path: "/projects" },
+  { key: "reports", icon: FileText, path: "/reports" },
+  { key: "issues", icon: AlertTriangle, path: "/issues" },
+  { key: "approvals", icon: CheckSquare, path: "/approvals" },
+  { key: "team", icon: Users, path: "/team" },
+  { key: "manual", icon: BookOpen, path: "/manual" },
+  { key: "settings", icon: Settings, path: "/settings" },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { profile, role, signOut } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-card border-r h-screen sticky top-0">
@@ -48,12 +53,12 @@ export function AppSidebar() {
               )}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              {t(`nav.${item.key}`)}
             </Link>
           );
         })}
       </nav>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
             {profile?.avatar_initials || "U"}
@@ -62,10 +67,11 @@ export function AppSidebar() {
             <p className="text-sm font-medium truncate">{profile?.full_name || "User"}</p>
             <p className="text-xs text-muted-foreground truncate capitalize">{role?.replace("-", " ") || "User"}</p>
           </div>
-          <button onClick={signOut} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
+          <button onClick={signOut} className="p-1.5 rounded-lg hover:bg-muted transition-colors" title={t("common.signOut")}>
             <LogOut className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+        <LanguageSwitcher compact />
       </div>
     </aside>
   );
@@ -73,6 +79,7 @@ export function AppSidebar() {
 
 export function MobileBottomNav() {
   const location = useLocation();
+  const { t } = useTranslation();
   const mobileItems = navItems.slice(0, 5);
 
   return (
@@ -90,7 +97,7 @@ export function MobileBottomNav() {
               )}
             >
               <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
+              <span>{t(`nav.${item.key}`)}</span>
             </Link>
           );
         })}
@@ -110,6 +117,7 @@ export function TopBar() {
         <h2 className="text-lg font-display font-bold">{profile?.company || "BuildTrust"}</h2>
       </div>
       <div className="flex items-center gap-3">
+        <LanguageSwitcher compact />
         <NotificationBell />
         <div className="lg:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
           {profile?.avatar_initials || "U"}
