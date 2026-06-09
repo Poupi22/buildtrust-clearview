@@ -2,41 +2,52 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsAdmin } from "@/hooks/useBuildTrust";
+import { useIsAdmin, useIsSuperAdmin } from "@/hooks/useBuildTrust";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Download, Shield, Bell, User, Building2, Workflow, FileText, Users as UsersIcon, ScrollText } from "lucide-react";
+import { Loader2, Download, Shield, Bell, User, Building2, Workflow, FileText, Users as UsersIcon, ScrollText, Languages, Globe, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { UserManagementSection } from "./Team";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { loadTranslationOverrides } from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 export default function Settings() {
   const isAdmin = useIsAdmin();
+  const isSuperAdmin = useIsSuperAdmin();
+  const { t } = useTranslation();
   const tabs = useMemo(() => {
     const base = [
-      { v: "profile", label: "Profile", icon: User },
-      { v: "security", label: "Security", icon: Shield },
-      { v: "notifications", label: "Notifications", icon: Bell },
+      { v: "profile", label: t("settings.profile"), icon: User },
+      { v: "security", label: t("settings.security"), icon: Shield },
+      { v: "notifications", label: t("settings.notifications"), icon: Bell },
+      { v: "language", label: t("settings.language"), icon: Languages },
     ];
     const admin = [
-      { v: "company", label: "Company", icon: Building2 },
-      { v: "workflow", label: "Workflow", icon: Workflow },
-      { v: "signature", label: "Signature", icon: FileText },
-      { v: "users", label: "Users", icon: UsersIcon },
-      { v: "audit", label: "Audit log", icon: ScrollText },
-      { v: "export", label: "Data export", icon: Download },
+      { v: "company", label: t("settings.company"), icon: Building2 },
+      { v: "workflow", label: t("settings.workflow"), icon: Workflow },
+      { v: "signature", label: t("settings.signature"), icon: FileText },
+      { v: "users", label: t("settings.users"), icon: UsersIcon },
+      { v: "audit", label: t("settings.audit"), icon: ScrollText },
+      { v: "export", label: t("settings.export"), icon: Download },
     ];
-    return isAdmin ? [...base, ...admin] : [...base, { v: "signature", label: "Signature", icon: FileText }];
-  }, [isAdmin]);
+    const superAdmin = [{ v: "translations", label: t("settings.translations"), icon: Globe }];
+    const out = [...base];
+    if (!isAdmin) out.push({ v: "signature", label: t("settings.signature"), icon: FileText });
+    if (isAdmin) out.push(...admin);
+    if (isSuperAdmin) out.push(...superAdmin);
+    return out;
+  }, [isAdmin, isSuperAdmin, t]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-display font-bold">Settings</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your account, preferences, and company configuration</p>
+        <h1 className="text-2xl font-display font-bold">{t("settings.title")}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t("settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
@@ -52,6 +63,7 @@ export default function Settings() {
         <TabsContent value="profile"><ProfileSection /></TabsContent>
         <TabsContent value="security"><SecuritySection /></TabsContent>
         <TabsContent value="notifications"><NotificationsSection /></TabsContent>
+        <TabsContent value="language"><LanguageSection /></TabsContent>
         <TabsContent value="signature"><SignatureSection /></TabsContent>
         {isAdmin && (
           <>
@@ -62,10 +74,143 @@ export default function Settings() {
             <TabsContent value="export"><DataExportSection /></TabsContent>
           </>
         )}
+        {isSuperAdmin && (
+          <TabsContent value="translations"><TranslationsSection /></TabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
+
+/* -------------------- Language (all users) -------------------- */
+function LanguageSection() {
+  const { t } = useTranslation();
+  return (
+    <div className="metric-card max-w-2xl space-y-4">
+      <div>
+        <h3 className="font-display font-bold">{t("settings.languageTitle")}</h3>
+        <p className="text-sm text-muted-foreground">{t("settings.languageDesc")}</p>
+      </div>
+      <LanguageSwitcher />
+    </div>
+  );
+}
+
+/* -------------------- Translations (super-admin) -------------------- */
+function TranslationsSection() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["translations"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("translations").select("*").order("key");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const [newKey, setNewKey] = useState("");
+  const [newEn, setNewEn] = useState("");
+  const [newFr, setNewFr] = useState("");
+  const [edits, setEdits] = useState<Record<string, { en: string; fr: string }>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const refresh = async () => {
+    await qc.invalidateQueries({ queryKey: ["translations"] });
+    await loadTranslationOverrides();
+  };
+
+  const add = async () => {
+    const key = newKey.trim();
+    if (!key || !newEn.trim() || !newFr.trim()) return toast.error("Key, English and French are required");
+    setBusy("add");
+    try {
+      const { error } = await supabase.from("translations").insert({ key, en: newEn.trim(), fr: newFr.trim() });
+      if (error) throw error;
+      setNewKey(""); setNewEn(""); setNewFr("");
+      toast.success("Translation added");
+      await refresh();
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+    finally { setBusy(null); }
+  };
+
+  const save = async (id: string) => {
+    const v = edits[id]; if (!v) return;
+    setBusy(id);
+    try {
+      const { error } = await supabase.from("translations").update({ en: v.en, fr: v.fr }).eq("id", id);
+      if (error) throw error;
+      toast.success("Saved");
+      setEdits((prev) => { const n = { ...prev }; delete n[id]; return n; });
+      await refresh();
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+    finally { setBusy(null); }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Delete this translation entry?")) return;
+    setBusy(id);
+    try {
+      const { error } = await supabase.from("translations").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Deleted");
+      await refresh();
+    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+    finally { setBusy(null); }
+  };
+
+  return (
+    <div className="space-y-3 max-w-4xl">
+      <div className="metric-card">
+        <h3 className="font-display font-bold">{t("settings.translationsTitle")}</h3>
+        <p className="text-sm text-muted-foreground">{t("settings.translationsDesc")}</p>
+      </div>
+
+      <div className="metric-card grid gap-3 sm:grid-cols-[1fr,1fr,1fr,auto] items-end">
+        <div className="space-y-2">
+          <Label>{t("settings.keyLabel")}</Label>
+          <Input value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="nav.projects" />
+        </div>
+        <div className="space-y-2">
+          <Label>English</Label>
+          <Input value={newEn} onChange={(e) => setNewEn(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Français</Label>
+          <Input value={newFr} onChange={(e) => setNewFr(e.target.value)} />
+        </div>
+        <Button onClick={add} disabled={busy === "add"}>
+          {busy === "add" && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {t("settings.addEntry")}
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="metric-card text-center py-10"><Loader2 className="h-5 w-5 mx-auto animate-spin" /></div>
+      ) : rows.length === 0 ? (
+        <div className="metric-card text-sm text-muted-foreground text-center py-6">No custom translations yet.</div>
+      ) : (
+        rows.map((r: any) => {
+          const v = edits[r.id] ?? { en: r.en, fr: r.fr };
+          const dirty = v.en !== r.en || v.fr !== r.fr;
+          return (
+            <div key={r.id} className="metric-card grid gap-3 sm:grid-cols-[200px,1fr,1fr,auto,auto] items-end">
+              <div className="text-xs font-mono text-muted-foreground break-all">{r.key}</div>
+              <Input value={v.en} onChange={(e) => setEdits({ ...edits, [r.id]: { ...v, en: e.target.value } })} />
+              <Input value={v.fr} onChange={(e) => setEdits({ ...edits, [r.id]: { ...v, fr: e.target.value } })} />
+              <Button size="sm" onClick={() => save(r.id)} disabled={!dirty || busy === r.id}>
+                {busy === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => remove(r.id)} disabled={busy === r.id}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 
 /* -------------------- Profile -------------------- */
 function ProfileSection() {
