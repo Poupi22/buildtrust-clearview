@@ -13,6 +13,7 @@ import Issues from "./pages/Issues";
 import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
+import Manual from "./pages/Manual";
 import NotFound from "./pages/NotFound";
 import ClientPortal from "./pages/ClientPortal";
 import TechnicianPortal from "./pages/TechnicianPortal";
