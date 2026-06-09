@@ -52,6 +52,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/settings" element={<ClientPortal />} />
+        <Route path="/manual" element={<ClientPortal />} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
       </Routes>
     );
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/technician" element={<TechnicianPortal />} />
         <Route path="/settings" element={<TechnicianPortal />} />
+        <Route path="/manual" element={<TechnicianPortal />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
       </Routes>
     );
