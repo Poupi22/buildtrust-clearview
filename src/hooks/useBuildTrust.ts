@@ -762,6 +762,11 @@ export function useIsAdmin() {
   return role === "super-admin" || role === "company-admin";
 }
 
+export function useIsSuperAdmin() {
+  const { role } = useAuth();
+  return role === "super-admin";
+}
+
 // ---------------- Milestone review workflow ----------------
 export function useReviewMilestone() {
   const qc = useQueryClient();

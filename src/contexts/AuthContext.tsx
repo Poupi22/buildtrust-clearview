@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { setLanguage } from "@/i18n";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const [profileRes, roleRes] = await Promise.all([
+        const [profileRes, roleRes, prefRes] = await Promise.all([
           supabase
             .from("profiles")
             .select("full_name, company, avatar_initials")
@@ -89,12 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .select("role")
             .eq("user_id", user.id)
             .maybeSingle(),
+          supabase
+            .from("user_preferences")
+            .select("language")
+            .eq("user_id", user.id)
+            .maybeSingle(),
         ]);
 
         if (!mounted) return;
 
         setProfile(profileRes.data ?? null);
         setRole(roleRes.data?.role ?? null);
+        const lang = (prefRes.data as any)?.language;
+        if (lang === "en" || lang === "fr") setLanguage(lang);
       } finally {
         if (mounted) setLoading(false);
       }
