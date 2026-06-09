@@ -558,6 +558,7 @@ export default function TechnicianPortal() {
 
         <main className="flex-1 px-4 py-6 lg:px-8 pb-24 lg:pb-8 max-w-5xl w-full mx-auto">
           {view === "settings" ? <SettingsPage />
+            : view === "manual" ? <Manual />
             : projects.length === 0 ? (
             <div className="metric-card text-center py-12">
               <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
