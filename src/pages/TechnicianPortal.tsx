@@ -16,8 +16,9 @@ import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
-  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings,
+  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings, BookOpen,
 } from "lucide-react";
+import Manual from "@/pages/Manual";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
@@ -37,7 +38,7 @@ const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-destructive/15 text-destructive",
 };
 
-type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent" | "settings";
+type ViewKey = "overview" | "tasks" | "report" | "journal" | "recent" | "settings" | "manual";
 
 export default function TechnicianPortal() {
   const { user, profile, signOut } = useAuth();
@@ -109,6 +110,7 @@ export default function TechnicianPortal() {
     { key: "journal", label: "Journal", icon: NotebookPen },
     { key: "report", label: "Report Progress", icon: FileText },
     { key: "recent", label: "My Reports", icon: History, badge: rejectedReports.length || undefined },
+    { key: "manual", label: "User Manual", icon: BookOpen },
     { key: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -117,12 +119,13 @@ export default function TechnicianPortal() {
 
   useEffect(() => {
     if (location.pathname === "/settings" && view !== "settings") setView("settings");
+    else if (location.pathname === "/manual" && view !== "manual") setView("manual");
   }, [location.pathname]);
 
   const onSelectView = (key: ViewKey) => {
     setView(key);
-    if (key === "settings" && location.pathname !== "/settings") navigate("/settings");
-    else if (key !== "settings" && location.pathname === "/settings") navigate("/technician");
+    const target = key === "settings" ? "/settings" : key === "manual" ? "/manual" : "/technician";
+    if (location.pathname !== target) navigate(target);
   };
 
   const JournalSection = () => (
