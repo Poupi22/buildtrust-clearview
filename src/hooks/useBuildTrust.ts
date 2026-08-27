@@ -81,6 +81,7 @@ export function useCreateProject() {
       location?: string;
       start_date?: string | null;
       client_user_id?: string | null;
+      client?: { email: string; full_name?: string } | null;
       members?: Array<{ user_id: string; role: "manager" | "engineer" | "technician" | "client" }>;
       documents?: Array<File | { file: File; title: string }>;
     }) => {
@@ -94,11 +95,13 @@ export function useCreateProject() {
           type: input.type ?? null,
           location: input.location ?? null,
           start_date: input.start_date || null,
+          client_name: input.client?.full_name?.trim() || null,
           created_by: user.id,
         })
         .select()
         .single();
       if (error) throw error;
+
       await supabase.from("project_members").insert({
         project_id: data.id,
         user_id: user.id,
