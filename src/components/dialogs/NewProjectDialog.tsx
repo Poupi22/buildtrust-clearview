@@ -192,28 +192,29 @@ export function NewProjectDialog() {
           )}
 
           {step === 1 && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="client">Client (shareholder)</Label>
-                <Select value={form.client_user_id || undefined} onValueChange={(v) => setForm({ ...form, client_user_id: v })}>
-                  <SelectTrigger id="client">
-                    <SelectValue placeholder={clients.length ? "Select a client" : "No client accounts yet — invite one first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (
-                      <SelectItem key={c.user_id} value={c.user_id}>{c.full_name || c.user_id.slice(0, 8)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="mt-1 text-xs text-muted-foreground">The client gets read-only portal access to approved and published data only.</p>
+                <Label className="flex items-center gap-1.5"><UserRound className="h-4 w-4" /> Client account</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  A client account is created for this project. If the email already exists, that account is linked instead.
+                </p>
               </div>
-              {form.client_user_id && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setForm({ ...form, client_user_id: "" })}>
-                  Clear client
-                </Button>
-              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="client_name">Client full name *</Label>
+                  <Input id="client_name" placeholder="Jane Doe" value={form.client_full_name} onChange={(e) => setForm({ ...form, client_full_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="client_email">Client email *</Label>
+                  <Input id="client_email" type="email" placeholder="client@company.com" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A temporary password is generated at creation and shown once. The client gets read-only access to approved and published data only.
+              </p>
             </div>
           )}
+
 
           {step === 2 && (
             <div className="space-y-4">
