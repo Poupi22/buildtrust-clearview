@@ -934,6 +934,8 @@ export type Database = {
         | "engineer"
         | "client"
         | "technician"
+        | "project-lead"
+        | "client-assistant"
       approval_decision: "approved" | "rejected" | "revision-requested"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "open" | "in-progress" | "resolved" | "closed"
@@ -950,6 +952,8 @@ export type Database = {
         | "client"
         | "viewer"
         | "technician"
+        | "project-lead"
+        | "client-assistant"
       project_status:
         | "active"
         | "on-hold"
@@ -1096,6 +1100,8 @@ export const Constants = {
         "engineer",
         "client",
         "technician",
+        "project-lead",
+        "client-assistant",
       ],
       approval_decision: ["approved", "rejected", "revision-requested"],
       issue_severity: ["low", "medium", "high", "critical"],
@@ -1114,6 +1120,8 @@ export const Constants = {
         "client",
         "viewer",
         "technician",
+        "project-lead",
+        "client-assistant",
       ],
       project_status: ["active", "on-hold", "completed", "delayed", "planning"],
       report_status: [
