@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Download, Shield, Bell, User, Building2, Workflow, FileText, Users as UsersIcon, ScrollText, Languages, Globe, Trash2 } from "lucide-react";
+import { Loader2, Download, Shield, Bell, User, Building2, Workflow, FileText, Users as UsersIcon, ScrollText, Languages, Globe, Trash2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { UserManagementSection } from "./Team";
+import Manual from "./Manual";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { loadTranslationOverrides } from "@/i18n";
 import { useTranslation } from "react-i18next";
@@ -27,6 +28,7 @@ export default function Settings() {
       { v: "security", label: t("settings.security"), icon: Shield },
       { v: "notifications", label: t("settings.notifications"), icon: Bell },
       { v: "language", label: t("settings.language"), icon: Languages },
+      { v: "manual", label: t("manual.title"), icon: BookOpen },
     ];
     const admin = [
       { v: "company", label: t("settings.company"), icon: Building2 },
@@ -66,6 +68,7 @@ export default function Settings() {
         <TabsContent value="notifications"><NotificationsSection /></TabsContent>
         <TabsContent value="language"><LanguageSection /></TabsContent>
         <TabsContent value="signature"><SignatureSection /></TabsContent>
+        <TabsContent value="manual"><Manual embedded /></TabsContent>
         {isAdmin && (
           <>
             <TabsContent value="company"><CompanySection /></TabsContent>
