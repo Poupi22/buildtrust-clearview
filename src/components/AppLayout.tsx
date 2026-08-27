@@ -7,6 +7,8 @@ import {
   FileText,
   AlertTriangle,
   CheckSquare,
+  CalendarRange,
+  Gauge,
   Users,
   Settings,
   BookOpen,
@@ -20,7 +22,9 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 const navItems = [
   { key: "dashboard", icon: LayoutDashboard, path: "/" },
   { key: "projects", icon: FolderKanban, path: "/projects" },
+  { key: "planning", icon: CalendarRange, path: "/planning" },
   { key: "reports", icon: FileText, path: "/reports" },
+  { key: "compliance", icon: Gauge, path: "/compliance" },
   { key: "issues", icon: AlertTriangle, path: "/issues" },
   { key: "approvals", icon: CheckSquare, path: "/approvals" },
   { key: "team", icon: Users, path: "/team" },

@@ -87,19 +87,19 @@ export default function Compliance() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Daily reporting compliance" value={`${stats.dailyRate}%`}
-          subtitle={`${stats.dailyOnTime}/${stats.dailyExpected} submitted`} icon={Gauge} />
+          subtitle={`${stats.dailyOnTime}/${stats.dailyExpected} submitted`} icon={<Gauge className="h-5 w-5" />} />
         <MetricCard title="Weekly reporting compliance" value={`${stats.weeklyRate}%`}
-          subtitle={`${stats.weeklyOnTime}/${stats.weeklyExpected} submitted`} icon={CalendarCheck} />
+          subtitle={`${stats.weeklyOnTime}/${stats.weeklyExpected} submitted`} icon={<CalendarCheck className="h-5 w-5" />} />
         <MetricCard title="Absent daily reports" value={String(stats.dailyAbsent)}
-          subtitle="Permanent non-compliance records" icon={CalendarX} />
+          subtitle="Permanent non-compliance records" icon={<CalendarX className="h-5 w-5" />} />
         <MetricCard title="Absent weekly reports" value={String(stats.weeklyAbsent)}
-          subtitle="Weekly cycles marked non-compliant" icon={AlertOctagon} />
+          subtitle="Weekly cycles marked non-compliant" icon={<AlertOctagon className="h-5 w-5" />} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <MetricCard title="Obligations still open" value={String(stats.pending)} subtitle="Awaiting submission" icon={ShieldAlert} />
-        <MetricCard title="Approved reports" value={String(stats.approved)} subtitle="Official project records" icon={CalendarCheck} />
-        <MetricCard title="Rejected reports" value={String(stats.rejected)} subtitle="Require a corrected version" icon={AlertOctagon} />
+        <MetricCard title="Obligations still open" value={String(stats.pending)} subtitle="Awaiting submission" icon={<ShieldAlert className="h-5 w-5" />} />
+        <MetricCard title="Approved reports" value={String(stats.approved)} subtitle="Official project records" icon={<CalendarCheck className="h-5 w-5" />} />
+        <MetricCard title="Rejected reports" value={String(stats.rejected)} subtitle="Require a corrected version" icon={<AlertOctagon className="h-5 w-5" />} />
       </div>
 
       <div>

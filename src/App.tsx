@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Reports from "./pages/Reports";
+import Planning from "./pages/Planning";
+import Compliance from "./pages/Compliance";
 import Issues from "./pages/Issues";
 import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
@@ -78,7 +80,9 @@ function AppRoutes() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/:id" element={<ProjectDetail />} />
+        <Route path="/planning" element={<Planning />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/compliance" element={<Compliance />} />
         <Route path="/issues" element={<Issues />} />
         <Route path="/approvals" element={<Approvals />} />
         <Route path="/team" element={<Team />} />
