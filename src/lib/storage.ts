@@ -8,7 +8,7 @@
 export function sanitizeFileName(name: string, maxLength = 80): string {
   const cleaned = name
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^[-.]+|[-.]+$/g, "");
@@ -20,7 +20,7 @@ export function safeFileExt(name: string): string {
   const ext = name.split(".").pop() ?? "";
   const cleaned = ext
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9]/g, "")
     .toLowerCase();
   return cleaned || "bin";
