@@ -246,7 +246,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-3xl">
         <DialogHeader>
           <DialogTitle>
-            {existing ? "Edit" : "New"} {type === "weekly" ? "weekly report" : "daily site journal (Journal de Chantier)"}
+            {existing ? "Edit" : "New"} {type === "weekly" ? "weekly site journal (Journal de Chantier Hebdomadaire)" : "daily site journal (Journal de Chantier)"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
@@ -313,13 +313,11 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
               <Input placeholder={type === "weekly" ? "Week 12 — Foundations & framing" : "Day headline"}
                 value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             </div>
-            {type === "daily" && (
-              <div>
-                <Label>Work area / section</Label>
-                <Input placeholder="Zone A — foundations" value={form.work_area}
-                  onChange={(e) => setForm({ ...form, work_area: e.target.value })} />
-              </div>
-            )}
+            <div>
+              <Label>Work area / section</Label>
+              <Input placeholder="Zone A — foundations" value={form.work_area}
+                onChange={(e) => setForm({ ...form, work_area: e.target.value })} />
+            </div>
           </div>
 
           <div>
