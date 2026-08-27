@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     const callerId = userRes.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const { project_id, email, full_name, password: customPwd } = body ?? {};
+    const { project_id, email, full_name, phone, address, company, password: customPwd } = body ?? {};
     if (!project_id || !email) {
       return new Response(JSON.stringify({ error: "project_id and email are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -108,7 +108,14 @@ Deno.serve(async (req) => {
 
     // Ensure profile exists (handle_new_user trigger usually does it)
     await admin.from("profiles").upsert(
-      { user_id: userId!, full_name: full_name ?? "", avatar_initials: (full_name ?? "C").slice(0, 2).toUpperCase() },
+      {
+        user_id: userId!,
+        full_name: full_name ?? "",
+        avatar_initials: (full_name ?? "C").slice(0, 2).toUpperCase(),
+        phone: phone ? String(phone).trim() || null : null,
+        address: address ? String(address).trim() || null : null,
+        company: company ? String(company).trim() || null : null,
+      },
       { onConflict: "user_id" },
     );
 

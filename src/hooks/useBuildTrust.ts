@@ -81,7 +81,7 @@ export function useCreateProject() {
       location?: string;
       start_date?: string | null;
       client_user_id?: string | null;
-      client?: { email: string; full_name?: string } | null;
+      client?: { email: string; full_name?: string; phone?: string; address?: string; company?: string } | null;
       members?: Array<{ user_id: string; role: "manager" | "engineer" | "technician" | "client" }>;
       documents?: Array<File | { file: File; title: string }>;
     }) => {
@@ -132,6 +132,9 @@ export function useCreateProject() {
             project_id: data.id,
             email: input.client.email.trim(),
             full_name: input.client.full_name?.trim() ?? "",
+            phone: input.client.phone?.trim() || null,
+            address: input.client.address?.trim() || null,
+            company: input.client.company?.trim() || null,
           },
         });
         if (invErr) throw invErr;
