@@ -144,7 +144,10 @@ export function useCreateProject() {
       }
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects"] });
+      qc.invalidateQueries({ queryKey: ["project_members"] });
+    },
   });
 }
 
