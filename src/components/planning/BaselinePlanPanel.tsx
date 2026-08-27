@@ -24,7 +24,7 @@ const statusTone: Record<string, string> = {
 
 export function BaselinePlanPanel({ projectId, canManage }: { projectId: string; canManage: boolean }) {
   const { data: versions = [], isLoading } = usePlanVersions(projectId);
-  const { data: isSuperAdmin } = useIsSuperAdmin();
+  const isSuperAdmin = useIsSuperAdmin();
   const submit = useSubmitPlanVersion();
   const activate = useActivatePlanVersion();
 
