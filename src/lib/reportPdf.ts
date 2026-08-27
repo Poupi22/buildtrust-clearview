@@ -139,7 +139,7 @@ export function generateJournalPdf(
     }
     y += 6;
 
-    if (r.report_type === "daily") {
+    {
       const personnel = asRows<PersonnelRow>(r.personnel);
       if (personnel.length) {
         writeText("Personnel", 10, true);
