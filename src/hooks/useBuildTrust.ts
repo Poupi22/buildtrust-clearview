@@ -201,6 +201,23 @@ export interface ReportInput {
   workforce_count?: number | null;
   notes?: string | null;
   status?: "draft" | "submitted";
+  /** Journal de Chantier structured sections + workflow links */
+  obligation_id?: string | null;
+  weekly_work_plan_id?: string | null;
+  plan_version_id?: string | null;
+  work_start_time?: string | null;
+  work_end_time?: string | null;
+  work_area?: string | null;
+  personnel?: Array<{ poste: string; nombre: number }>;
+  equipment?: Array<{ designation: string; utilisation: string }>;
+  works_done?: Array<{ designation: string; observations: string }>;
+  materials?: Array<{ designation: string; stock_matin: string; approvisionnement: string; consomme: string; stock_soir: string }>;
+  owner_instructions?: string | null;
+  supervision_instructions?: string | null;
+  safety_observations?: string | null;
+  technical_observations?: string | null;
+  corrective_actions?: string | null;
+  delays?: string | null;
 }
 
 export function useReports(projectId?: string, reportType?: ReportType) {
@@ -245,6 +262,24 @@ export function useCreateReport() {
           notes: input.notes ?? null,
           author_id: user.id,
           status,
+          state: status === "submitted" ? "submitted" : "draft",
+          obligation_id: input.obligation_id ?? null,
+          weekly_work_plan_id: input.weekly_work_plan_id ?? null,
+          plan_version_id: input.plan_version_id ?? null,
+          work_start_time: input.work_start_time || null,
+          work_end_time: input.work_end_time || null,
+          work_area: input.work_area ?? null,
+          personnel: (input.personnel ?? []) as any,
+          equipment: (input.equipment ?? []) as any,
+          works_done: (input.works_done ?? []) as any,
+          materials: (input.materials ?? []) as any,
+          owner_instructions: input.owner_instructions ?? null,
+          supervision_instructions: input.supervision_instructions ?? null,
+          safety_observations: input.safety_observations ?? null,
+          technical_observations: input.technical_observations ?? null,
+          corrective_actions: input.corrective_actions ?? null,
+          delays: input.delays ?? null,
+          report_ref: `${input.report_type === "weekly" ? "WR" : "DR"}-${input.report_date}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
           submitted_at: status === "submitted" ? new Date().toISOString() : null,
         })
         .select()
@@ -265,6 +300,7 @@ export function useUpdateReport() {
         .from("daily_reports")
         .update({
           ...patch,
+          ...(patch.status ? { state: patch.status === "submitted" ? "submitted" : "draft" } : {}),
           submitted_at: patch.status === "submitted" ? new Date().toISOString() : undefined,
         })
         .eq("id", id);
@@ -295,6 +331,7 @@ export function usePublishWeeklyReport() {
         .from("daily_reports")
         .update({
           status: "approved",
+          state: "approved",
           is_published: true,
           published_at: new Date().toISOString(),
           published_by: user.id,
@@ -322,10 +359,12 @@ export function useReviewReport() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { id: string; project_id: string; decision: "approved" | "rejected" }) => {
+    mutationFn: async (input: { id: string; project_id: string; decision: "approved" | "rejected"; reason?: string | null }) => {
       if (!user) throw new Error("Not authenticated");
       const patch: any = {
         status: input.decision === "approved" ? "approved" : "rejected",
+        state: input.decision === "approved" ? "approved" : "rejected",
+        review_comment: input.reason ?? null,
         reviewed_at: new Date().toISOString(),
         reviewed_by: user.id,
       };
@@ -337,6 +376,22 @@ export function useReviewReport() {
         entity_id: input.id,
         decision: input.decision,
         reviewer_id: user.id,
+        comment: input.reason ?? null,
+      });
+      const { data: sig } = await supabase
+        .from("signature_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_current", true)
+        .maybeSingle();
+      await supabase.from("report_approvals").insert({
+        report_id: input.id,
+        project_id: input.project_id,
+        reviewer_id: user.id,
+        decision: input.decision,
+        reason: input.reason ?? null,
+        signature_profile_id: sig?.id ?? null,
+        signature_snapshot: sig ? ({ full_name: sig.full_name, initials: sig.initials, kind: sig.kind, version: sig.version, signature_data: sig.signature_data } as any) : null,
       });
     },
     onSuccess: () => {
