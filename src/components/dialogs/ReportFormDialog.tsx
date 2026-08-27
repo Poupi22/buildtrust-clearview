@@ -171,7 +171,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
   const submit = async (status: "draft" | "submitted") => {
     if (!form.project_id) { toast.error("Select a project"); return; }
     if (!form.summary.trim()) { toast.error("A summary is required"); return; }
-    if (type === "daily" && status === "submitted" && works.length === 0) {
+    if (status === "submitted" && works.length === 0) {
       toast.error("Record at least one line under works carried out");
       return;
     }
@@ -246,7 +246,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-3xl">
         <DialogHeader>
           <DialogTitle>
-            {existing ? "Edit" : "New"} {type === "weekly" ? "weekly report" : "daily site journal (Journal de Chantier)"}
+            {existing ? "Edit" : "New"} {type === "weekly" ? "weekly site journal (Journal de Chantier Hebdomadaire)" : "daily site journal (Journal de Chantier)"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
@@ -272,7 +272,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
             </p>
           )}
 
-          {type === "weekly" ? (
+          {type === "weekly" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Week start</Label>
@@ -283,27 +283,29 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
                 <Input type="date" value={form.week_end} onChange={(e) => setForm({ ...form, week_end: e.target.value })} />
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          )}
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {type === "daily" && (
               <div>
                 <Label>Date</Label>
                 <Input type="date" max={today} value={form.report_date}
                   onChange={(e) => setForm({ ...form, report_date: e.target.value })} />
               </div>
-              <div>
-                <Label>Weather</Label>
-                <Input placeholder="Ensoleillé, 30°C" value={form.weather} onChange={(e) => setForm({ ...form, weather: e.target.value })} />
-              </div>
-              <div>
-                <Label>Start of work</Label>
-                <Input type="time" value={form.work_start_time} onChange={(e) => setForm({ ...form, work_start_time: e.target.value })} />
-              </div>
-              <div>
-                <Label>End of work</Label>
-                <Input type="time" value={form.work_end_time} onChange={(e) => setForm({ ...form, work_end_time: e.target.value })} />
-              </div>
+            )}
+            <div>
+              <Label>Weather</Label>
+              <Input placeholder="Ensoleillé, 30°C" value={form.weather} onChange={(e) => setForm({ ...form, weather: e.target.value })} />
             </div>
-          )}
+            <div>
+              <Label>Start of work</Label>
+              <Input type="time" value={form.work_start_time} onChange={(e) => setForm({ ...form, work_start_time: e.target.value })} />
+            </div>
+            <div>
+              <Label>End of work</Label>
+              <Input type="time" value={form.work_end_time} onChange={(e) => setForm({ ...form, work_end_time: e.target.value })} />
+            </div>
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -311,13 +313,11 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
               <Input placeholder={type === "weekly" ? "Week 12 — Foundations & framing" : "Day headline"}
                 value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             </div>
-            {type === "daily" && (
-              <div>
-                <Label>Work area / section</Label>
-                <Input placeholder="Zone A — foundations" value={form.work_area}
-                  onChange={(e) => setForm({ ...form, work_area: e.target.value })} />
-              </div>
-            )}
+            <div>
+              <Label>Work area / section</Label>
+              <Input placeholder="Zone A — foundations" value={form.work_area}
+                onChange={(e) => setForm({ ...form, work_area: e.target.value })} />
+            </div>
           </div>
 
           <div>
@@ -326,8 +326,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
               value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
           </div>
 
-          {type === "daily" && (
-            <>
+          <>
               <RowTable
                 title="Personnel présent"
                 addLabel="Add post"
@@ -391,7 +390,6 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
                 </div>
               </div>
             </>
-          )}
 
           <div>
             <Label>Achievements</Label>

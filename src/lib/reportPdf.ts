@@ -40,6 +40,10 @@ interface Report {
   materials?: MaterialRow[] | null;
   owner_instructions?: string | null;
   supervision_instructions?: string | null;
+  delays?: string | null;
+  corrective_actions?: string | null;
+  safety_observations?: string | null;
+  technical_observations?: string | null;
   signature_snapshot?: SignatureSnapshot | null;
   approver_signature_snapshot?: SignatureSnapshot | null;
 }
@@ -126,7 +130,7 @@ export function generateJournalPdf(
       r.report_type === "weekly" && r.week_start && r.week_end
         ? `Week of ${r.week_start} → ${r.week_end}`
         : r.report_date;
-    writeText(`${r.report_type === "weekly" ? "RAPPORT HEBDOMADAIRE" : "JOURNAL DE CHANTIER"} · ${dateLabel}`, 9, true);
+    writeText(`${r.report_type === "weekly" ? "JOURNAL DE CHANTIER HEBDOMADAIRE" : "JOURNAL DE CHANTIER"} · ${dateLabel}`, 9, true);
     if (r.title) writeText(r.title, 14, true);
 
     const meta: string[] = [];
@@ -139,7 +143,7 @@ export function generateJournalPdf(
     }
     y += 6;
 
-    if (r.report_type === "daily") {
+    {
       const personnel = asRows<PersonnelRow>(r.personnel);
       if (personnel.length) {
         writeText("Personnel", 10, true);
@@ -178,18 +182,13 @@ export function generateJournalPdf(
       section("Instructions du maître de l'ouvrage", r.owner_instructions);
       section("Instructions de la mission de contrôle", r.supervision_instructions);
       if (r.summary) section("Résumé", r.summary);
+      section("Réalisations", r.achievements);
       if (r.challenges) section("Difficultés / blocages", r.challenges);
-    } else {
-      const section = (label: string, body?: string | null) => {
-        if (!body) return;
-        writeText(label, 10, true);
-        writeText(body, 11);
-        y += 4;
-      };
-      section("Summary", r.summary);
-      section("Achievements", r.achievements);
-      section("Challenges / blockers", r.challenges);
-      section("Plan for next week", r.next_plan);
+      section("Retards constatés", r.delays);
+      section("Actions correctives", r.corrective_actions);
+      section("Observations HSE / sécurité", r.safety_observations);
+      section("Observations techniques", r.technical_observations);
+      section(r.report_type === "weekly" ? "Plan de la semaine prochaine" : "Activités du lendemain", r.next_plan);
     }
     if (includeInternal) {
       if (r.notes) { writeText("Internal notes", 10, true); writeText(r.notes, 11); y += 4; }
