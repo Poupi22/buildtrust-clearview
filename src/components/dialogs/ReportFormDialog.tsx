@@ -272,7 +272,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
             </p>
           )}
 
-          {type === "weekly" ? (
+          {type === "weekly" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Week start</Label>
@@ -283,27 +283,29 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
                 <Input type="date" value={form.week_end} onChange={(e) => setForm({ ...form, week_end: e.target.value })} />
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          )}
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {type === "daily" && (
               <div>
                 <Label>Date</Label>
                 <Input type="date" max={today} value={form.report_date}
                   onChange={(e) => setForm({ ...form, report_date: e.target.value })} />
               </div>
-              <div>
-                <Label>Weather</Label>
-                <Input placeholder="Ensoleillé, 30°C" value={form.weather} onChange={(e) => setForm({ ...form, weather: e.target.value })} />
-              </div>
-              <div>
-                <Label>Start of work</Label>
-                <Input type="time" value={form.work_start_time} onChange={(e) => setForm({ ...form, work_start_time: e.target.value })} />
-              </div>
-              <div>
-                <Label>End of work</Label>
-                <Input type="time" value={form.work_end_time} onChange={(e) => setForm({ ...form, work_end_time: e.target.value })} />
-              </div>
+            )}
+            <div>
+              <Label>Weather</Label>
+              <Input placeholder="Ensoleillé, 30°C" value={form.weather} onChange={(e) => setForm({ ...form, weather: e.target.value })} />
             </div>
-          )}
+            <div>
+              <Label>Start of work</Label>
+              <Input type="time" value={form.work_start_time} onChange={(e) => setForm({ ...form, work_start_time: e.target.value })} />
+            </div>
+            <div>
+              <Label>End of work</Label>
+              <Input type="time" value={form.work_end_time} onChange={(e) => setForm({ ...form, work_end_time: e.target.value })} />
+            </div>
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
