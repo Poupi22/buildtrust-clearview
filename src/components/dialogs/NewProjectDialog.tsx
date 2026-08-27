@@ -32,7 +32,9 @@ export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
+  const [creds, setCreds] = useState<{ email: string; password: string | null; created: boolean } | null>(null);
+
   const [members, setMembers] = useState<Member[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [docs, setDocs] = useState<DocEntry[]>([]);
