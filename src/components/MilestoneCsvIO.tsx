@@ -15,7 +15,26 @@ function escape(v: any) {
   return s;
 }
 
+/** Excel often saves CSV as Windows-1252/ANSI (or UTF-16). Decode accordingly so
+ *  French accents (é, è, à, ç, ô…) survive the import. */
+async function decodeFile(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  // BOM checks
+  if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+    return new TextDecoder("utf-8").decode(buf.subarray(3));
+  }
+  if (buf[0] === 0xff && buf[1] === 0xfe) return new TextDecoder("utf-16le").decode(buf.subarray(2));
+  if (buf[0] === 0xfe && buf[1] === 0xff) return new TextDecoder("utf-16be").decode(buf.subarray(2));
+  // Strict UTF-8 first; if it throws, the file is legacy 8-bit (Excel ANSI export)
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    return new TextDecoder("windows-1252").decode(buf);
+  }
+}
+
 function parseCsv(text: string): string[][] {
+
   const rows: string[][] = [];
   let cur: string[] = [];
   let val = "";
