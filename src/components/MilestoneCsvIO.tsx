@@ -33,8 +33,16 @@ async function decodeFile(file: File): Promise<string> {
   }
 }
 
-function parseCsv(text: string): string[][] {
+function detectDelimiter(text: string): string {
+  const firstLine = text.split(/\r?\n/)[0] ?? "";
+  const semis = (firstLine.match(/;/g) || []).length;
+  const commas = (firstLine.match(/,/g) || []).length;
+  const tabs = (firstLine.match(/\t/g) || []).length;
+  if (tabs > semis && tabs > commas) return "\t";
+  return semis > commas ? ";" : ",";
+}
 
+function parseCsv(text: string, delim = detectDelimiter(text)): string[][] {
   const rows: string[][] = [];
   let cur: string[] = [];
   let val = "";
@@ -48,7 +56,8 @@ function parseCsv(text: string): string[][] {
       } else val += c;
     } else {
       if (c === '"') inQ = true;
-      else if (c === ",") { cur.push(val); val = ""; }
+      else if (c === delim) { cur.push(val); val = ""; }
+
       else if (c === "\n" || c === "\r") {
         if (c === "\r" && text[i + 1] === "\n") i++;
         cur.push(val); val = "";
