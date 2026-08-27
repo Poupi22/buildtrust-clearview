@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronRight,
   Settings as SettingsIcon,
-  BookOpen,
 } from "lucide-react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -25,9 +24,8 @@ import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import SettingsPage from "@/pages/Settings";
-import Manual from "@/pages/Manual";
 
-type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents" | "settings" | "manual";
+type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents" | "settings";
 
 export default function ClientPortal() {
   const [activeTab, setActiveTab] = useState<PortalTab>("overview");
@@ -68,7 +66,6 @@ export default function ClientPortal() {
     { key: "updates", label: "Updates", icon: FileText },
     { key: "photos", label: "Site Photos", icon: Camera },
     { key: "documents", label: "Documents", icon: FileText },
-    { key: "manual", label: "User Manual", icon: BookOpen },
     { key: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
@@ -77,12 +74,11 @@ export default function ClientPortal() {
 
   useEffect(() => {
     if (location.pathname === "/settings" && activeTab !== "settings") setActiveTab("settings");
-    else if (location.pathname === "/manual" && activeTab !== "manual") setActiveTab("manual");
   }, [location.pathname]);
 
   const onSelectTab = (key: PortalTab) => {
     setActiveTab(key);
-    const target = key === "settings" ? "/settings" : key === "manual" ? "/manual" : "/portal";
+    const target = key === "settings" ? "/settings" : "/portal";
     if (location.pathname !== target) navigate(target);
   };
 
@@ -347,7 +343,6 @@ export default function ClientPortal() {
         )}
 
         {activeTab === "settings" && <SettingsPage />}
-        {activeTab === "manual" && <Manual />}
 
         <footer className="text-center py-6 border-t">
           <p className="text-xs text-muted-foreground">
