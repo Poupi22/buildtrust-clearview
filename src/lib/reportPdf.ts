@@ -126,7 +126,7 @@ export function generateJournalPdf(
       r.report_type === "weekly" && r.week_start && r.week_end
         ? `Week of ${r.week_start} → ${r.week_end}`
         : r.report_date;
-    writeText(`${r.report_type === "weekly" ? "RAPPORT HEBDOMADAIRE" : "JOURNAL DE CHANTIER"} · ${dateLabel}`, 9, true);
+    writeText(`${r.report_type === "weekly" ? "JOURNAL DE CHANTIER HEBDOMADAIRE" : "JOURNAL DE CHANTIER"} · ${dateLabel}`, 9, true);
     if (r.title) writeText(r.title, 14, true);
 
     const meta: string[] = [];

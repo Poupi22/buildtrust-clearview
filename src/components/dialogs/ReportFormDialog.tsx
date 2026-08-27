@@ -171,7 +171,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
   const submit = async (status: "draft" | "submitted") => {
     if (!form.project_id) { toast.error("Select a project"); return; }
     if (!form.summary.trim()) { toast.error("A summary is required"); return; }
-    if (type === "daily" && status === "submitted" && works.length === 0) {
+    if (status === "submitted" && works.length === 0) {
       toast.error("Record at least one line under works carried out");
       return;
     }
