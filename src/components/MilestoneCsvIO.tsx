@@ -15,7 +15,41 @@ function escape(v: any) {
   return s;
 }
 
-function parseCsv(text: string): string[][] {
+/** Excel often saves CSV as Windows-1252/ANSI (or UTF-16). Decode accordingly so
+ *  French accents (é, è, à, ç, ô…) survive the import. */
+async function decodeFile(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  // BOM checks
+  if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+    return new TextDecoder("utf-8").decode(buf.subarray(3));
+  }
+  if (buf[0] === 0xff && buf[1] === 0xfe) return new TextDecoder("utf-16le").decode(buf.subarray(2));
+  if (buf[0] === 0xfe && buf[1] === 0xff) return new TextDecoder("utf-16be").decode(buf.subarray(2));
+  // Strict UTF-8 first; if it throws, the file is legacy 8-bit (Excel ANSI export)
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    return new TextDecoder("windows-1252").decode(buf);
+  }
+}
+
+/** Accepts both "60.5" and French "60,5" */
+function num(v: any): number {
+  const s = String(v ?? "").trim().replace(/\s/g, "").replace(",", ".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function detectDelimiter(text: string): string {
+  const firstLine = text.split(/\r?\n/)[0] ?? "";
+  const semis = (firstLine.match(/;/g) || []).length;
+  const commas = (firstLine.match(/,/g) || []).length;
+  const tabs = (firstLine.match(/\t/g) || []).length;
+  if (tabs > semis && tabs > commas) return "\t";
+  return semis > commas ? ";" : ",";
+}
+
+function parseCsv(text: string, delim = detectDelimiter(text)): string[][] {
   const rows: string[][] = [];
   let cur: string[] = [];
   let val = "";
@@ -29,7 +63,8 @@ function parseCsv(text: string): string[][] {
       } else val += c;
     } else {
       if (c === '"') inQ = true;
-      else if (c === ",") { cur.push(val); val = ""; }
+      else if (c === delim) { cur.push(val); val = ""; }
+
       else if (c === "\n" || c === "\r") {
         if (c === "\r" && text[i + 1] === "\n") i++;
         cur.push(val); val = "";
@@ -82,7 +117,7 @@ export function MilestoneCsvIO({
         }
       }
     }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = `${projectCode}-milestones.csv`; a.click();
@@ -95,7 +130,7 @@ export function MilestoneCsvIO({
       ["Foundation", 20, "Excavation", "m3", 500, 60, ""].map(escape).join(","),
       ["Foundation", 20, "Rebar install", "kg", 1200, 40, ""].map(escape).join(","),
     ];
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = "milestones-template.csv"; a.click();
@@ -106,7 +141,7 @@ export function MilestoneCsvIO({
     if (!user) { toast.error("Not authenticated"); return; }
     setBusy(true);
     try {
-      const text = await file.text();
+      const text = await decodeFile(file);
       const rows = parseCsv(text);
       if (rows.length < 2) throw new Error("CSV is empty");
       const header = rows[0].map((h) => h.trim());
@@ -126,7 +161,7 @@ export function MilestoneCsvIO({
         if (r.every((c) => c.trim() === "")) continue;
         const mt = (r[idx.milestone_title] ?? "").trim();
         if (!mt) continue;
-        const mContrib = Number(r[idx.milestone_contribution_pct] ?? 0);
+        const mContrib = num(r[idx.milestone_contribution_pct]);
         const planned = idx.milestone_planned_date !== undefined ? (r[idx.milestone_planned_date]?.trim() || null) : null;
         const g = groups.get(mt) ?? { contribution: mContrib, planned, subs: [] };
         const st = (r[idx.sub_title] ?? "").trim();
@@ -134,8 +169,8 @@ export function MilestoneCsvIO({
           g.subs.push({
             title: st,
             unit: (r[idx.sub_unit] ?? "unit").trim() || "unit",
-            target_quantity: Number(r[idx.sub_target_quantity] ?? 0),
-            contribution_pct: Number(r[idx.sub_contribution_pct] ?? 0),
+            target_quantity: num(r[idx.sub_target_quantity]),
+            contribution_pct: num(r[idx.sub_contribution_pct]),
           });
         }
         groups.set(mt, g);
