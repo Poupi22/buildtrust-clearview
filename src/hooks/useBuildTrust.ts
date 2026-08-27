@@ -81,6 +81,7 @@ export function useCreateProject() {
       location?: string;
       start_date?: string | null;
       client_user_id?: string | null;
+      client?: { email: string; full_name?: string } | null;
       members?: Array<{ user_id: string; role: "manager" | "engineer" | "technician" | "client" }>;
       documents?: Array<File | { file: File; title: string }>;
     }) => {
@@ -94,11 +95,13 @@ export function useCreateProject() {
           type: input.type ?? null,
           location: input.location ?? null,
           start_date: input.start_date || null,
+          client_name: input.client?.full_name?.trim() || null,
           created_by: user.id,
         })
         .select()
         .single();
       if (error) throw error;
+
       await supabase.from("project_members").insert({
         project_id: data.id,
         user_id: user.id,
@@ -122,6 +125,26 @@ export function useCreateProject() {
         if (mErr) throw mErr;
       }
 
+      let clientCredentials: { email: string; password: string | null; created: boolean } | null = null;
+      if (input.client?.email) {
+        const { data: inv, error: invErr } = await supabase.functions.invoke("invite-client", {
+          body: {
+            project_id: data.id,
+            email: input.client.email.trim(),
+            full_name: input.client.full_name?.trim() ?? "",
+          },
+        });
+        if (invErr) throw invErr;
+        if ((inv as any)?.error) throw new Error((inv as any).error);
+        clientCredentials = {
+          email: (inv as any).email,
+          password: (inv as any).password ?? null,
+          created: !!(inv as any).created,
+        };
+      }
+
+
+
       if (input.documents && input.documents.length) {
         for (const entry of input.documents) {
           const file = entry instanceof File ? entry : entry.file;
@@ -142,7 +165,8 @@ export function useCreateProject() {
           if (mediaErr) throw mediaErr;
         }
       }
-      return data;
+      return { ...data, client_credentials: clientCredentials };
+
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["projects"] });

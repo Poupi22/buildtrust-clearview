@@ -32,7 +32,9 @@ export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
+  const [creds, setCreds] = useState<{ email: string; password: string | null; created: boolean } | null>(null);
+
   const [members, setMembers] = useState<Member[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [docs, setDocs] = useState<DocEntry[]>([]);
@@ -59,10 +61,11 @@ export function NewProjectDialog() {
 
   const reset = () => {
     setStep(0);
-    setForm({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
+    setForm({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
     setMembers([]);
     setDocs([]);
     setMemberSearch("");
+    setCreds(null);
   };
 
   const addFiles = (list: FileList | null) => {
@@ -81,43 +84,60 @@ export function NewProjectDialog() {
   const setMemberRole = (userId: string, role: MemberRole) =>
     setMembers((prev) => prev.map((m) => (m.user_id === userId ? { ...m, role } : m)));
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.client_email.trim());
+
   const stepValid = (index: number) => {
     if (index === 0) return form.title.trim().length > 0;
+    if (index === 1) return form.client_full_name.trim().length > 0 && emailValid;
     if (index === 3) return docs.every((d) => d.title.trim().length > 0);
     return true;
   };
 
+  const stepError = (index: number) =>
+    index === 0
+      ? "Project title is required"
+      : index === 1
+        ? "Client full name and a valid email are required"
+        : "Each document needs a title";
+
   const next = () => {
     if (!stepValid(step)) {
-      toast.error(step === 0 ? "Project title is required" : "Each document needs a title");
+      toast.error(stepError(step));
       return;
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
 
   const submit = async () => {
-    if (!stepValid(0)) {
-      toast.error("Project title is required");
-      setStep(0);
-      return;
+    for (const i of [0, 1, 3]) {
+      if (!stepValid(i)) {
+        toast.error(stepError(i));
+        setStep(i);
+        return;
+      }
     }
     try {
-      await createProject.mutateAsync({
+      const created: any = await createProject.mutateAsync({
         title: form.title.trim(),
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
-        client_user_id: form.client_user_id || null,
+        client: { email: form.client_email.trim(), full_name: form.client_full_name.trim() },
         members,
         documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
       toast.success("Project created");
-      setOpen(false);
-      reset();
+      if (created?.client_credentials) {
+        setCreds(created.client_credentials);
+      } else {
+        setOpen(false);
+        reset();
+      }
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
@@ -192,28 +212,29 @@ export function NewProjectDialog() {
           )}
 
           {step === 1 && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="client">Client (shareholder)</Label>
-                <Select value={form.client_user_id || undefined} onValueChange={(v) => setForm({ ...form, client_user_id: v })}>
-                  <SelectTrigger id="client">
-                    <SelectValue placeholder={clients.length ? "Select a client" : "No client accounts yet — invite one first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (
-                      <SelectItem key={c.user_id} value={c.user_id}>{c.full_name || c.user_id.slice(0, 8)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="mt-1 text-xs text-muted-foreground">The client gets read-only portal access to approved and published data only.</p>
+                <Label className="flex items-center gap-1.5"><UserRound className="h-4 w-4" /> Client account</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  A client account is created for this project. If the email already exists, that account is linked instead.
+                </p>
               </div>
-              {form.client_user_id && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setForm({ ...form, client_user_id: "" })}>
-                  Clear client
-                </Button>
-              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="client_name">Client full name *</Label>
+                  <Input id="client_name" placeholder="Jane Doe" value={form.client_full_name} onChange={(e) => setForm({ ...form, client_full_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="client_email">Client email *</Label>
+                  <Input id="client_email" type="email" placeholder="client@company.com" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A temporary password is generated at creation and shown once. The client gets read-only access to approved and published data only.
+              </p>
             </div>
           )}
+
 
           {step === 2 && (
             <div className="space-y-4">
@@ -305,7 +326,33 @@ export function NewProjectDialog() {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 4 && creds && (
+            <div className="space-y-4 text-sm">
+              <div className="rounded-lg border bg-success/5 p-3">
+                {creds.created
+                  ? "Project created and client account provisioned. Share these credentials securely — the password is shown only once."
+                  : "Project created. This email already had an account and has been linked to the project as client."}
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Login URL</Label>
+                  <Input readOnly value={`${window.location.origin}/login`} className="font-mono text-xs" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input readOnly value={creds.email} className="font-mono text-xs" />
+                </div>
+                {creds.password && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Temporary password</Label>
+                    <Input readOnly value={creds.password} className="font-mono text-xs" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {step === 4 && !creds && (
             <div className="space-y-4 text-sm">
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Project details</h3>
@@ -318,8 +365,10 @@ export function NewProjectDialog() {
               </section>
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Client</h3>
-                <p>{form.client_user_id ? nameOf(form.client_user_id) : "No client linked"}</p>
+                <p>{form.client_full_name || "—"}</p>
+                <p className="text-xs text-muted-foreground">{form.client_email || "—"}</p>
               </section>
+
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Team ({members.length + 1})</h3>
                 <ul className="space-y-1">
@@ -352,17 +401,27 @@ export function NewProjectDialog() {
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t bg-muted/30 px-6 py-4">
-          <Button type="button" variant="ghost" onClick={() => (step === 0 ? setOpen(false) : setStep(step - 1))}>
-            {step === 0 ? "Cancel" : <><ChevronLeft className="mr-1 h-4 w-4" /> Back</>}
-          </Button>
-          {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={next}>Next <ChevronRight className="ml-1 h-4 w-4" /></Button>
+          {creds ? (
+            <>
+              <span className="text-xs text-muted-foreground">Client access created</span>
+              <Button type="button" onClick={() => { setOpen(false); reset(); }}>Done</Button>
+            </>
           ) : (
-            <Button type="button" onClick={submit} disabled={createProject.isPending}>
-              {createProject.isPending ? "Creating..." : "Create project"}
-            </Button>
+            <>
+              <Button type="button" variant="ghost" onClick={() => (step === 0 ? setOpen(false) : setStep(step - 1))}>
+                {step === 0 ? "Cancel" : <><ChevronLeft className="mr-1 h-4 w-4" /> Back</>}
+              </Button>
+              {step < STEPS.length - 1 ? (
+                <Button type="button" onClick={next}>Next <ChevronRight className="ml-1 h-4 w-4" /></Button>
+              ) : (
+                <Button type="button" onClick={submit} disabled={createProject.isPending}>
+                  {createProject.isPending ? "Creating..." : "Create project"}
+                </Button>
+              )}
+            </>
           )}
         </div>
+
       </DialogContent>
     </Dialog>
   );
