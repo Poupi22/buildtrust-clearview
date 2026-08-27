@@ -145,12 +145,13 @@ const SECTIONS: Section[] = [
     title: { en: "5. Managing projects", fr: "5. Gérer les projets" },
     subsections: [
       {
-        heading: { en: "Creating a project", fr: "Créer un projet" },
+        heading: { en: "Creating a project (step-by-step wizard)", fr: "Créer un projet (assistant pas à pas)" },
         body: {
-          en: "From Projects → New project, fill in name, location, start and target end date, owning company and a client contact. The client contact is automatically invited to the client portal.",
-          fr: "Depuis Projets → Nouveau projet, renseignez le nom, le lieu, les dates de début et de fin cible, l'entreprise propriétaire et un contact client. Le contact client est automatiquement invité au portail.",
+          en: "Projects → New project opens a five-step wizard: 1) Project details (name, location, start and target end date). 2) Client — the client account is created here directly: full name and email are required, phone, address and company are optional; a temporary password and portal link are displayed at the end. 3) Team — add engineers, technicians and managers. 4) Documents — upload initial contractual documents. 5) Review and validate to create the project.",
+          fr: "Projets → Nouveau projet ouvre un assistant en cinq étapes : 1) Détails du projet (nom, lieu, dates de début et de fin cible). 2) Client — le compte client est créé ici directement : nom complet et e-mail obligatoires, téléphone, adresse et entreprise facultatifs ; un mot de passe temporaire et le lien du portail sont affichés à la fin. 3) Équipe — ajoutez ingénieurs, techniciens et chefs de projet. 4) Documents — téléversez les documents contractuels initiaux. 5) Récapitulatif et validation pour créer le projet.",
         },
       },
+
       {
         heading: { en: "Milestones and sub-milestones", fr: "Jalons et sous-jalons" },
         body: {
