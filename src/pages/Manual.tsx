@@ -202,7 +202,7 @@ const SECTIONS: Section[] = [
   {
     id: "approvals",
     roles: ["super-admin", "company-admin", "manager", "engineer"],
-    title: { en: "7. Approval workflow", fr: "7. Flux d'approbation" },
+    title: { en: "9. Approval workflow", fr: "9. Flux d'approbation" },
     intro: {
       en: "Every piece of content visible to the client passes through a controlled multi-stage workflow.",
       fr: "Tout contenu visible par le client suit un flux multi-étapes contrôlé.",
@@ -234,7 +234,7 @@ const SECTIONS: Section[] = [
   {
     id: "client-portal",
     roles: ["client", "super-admin", "company-admin", "manager", "engineer"],
-    title: { en: "8. Client portal", fr: "8. Portail client" },
+    title: { en: "10. Client portal", fr: "10. Portail client" },
     subsections: [
       {
         heading: { en: "What clients see", fr: "Ce que voient les clients" },
@@ -262,7 +262,7 @@ const SECTIONS: Section[] = [
   {
     id: "technician",
     roles: ["technician", "super-admin", "company-admin", "manager", "engineer"],
-    title: { en: "9. Field technician portal", fr: "9. Portail technicien terrain" },
+    title: { en: "11. Field technician portal", fr: "11. Portail technicien terrain" },
     subsections: [
       {
         heading: { en: "Tasks", fr: "Tâches" },
@@ -290,7 +290,7 @@ const SECTIONS: Section[] = [
   {
     id: "issues",
     roles: ["super-admin", "company-admin", "manager", "engineer", "technician"],
-    title: { en: "10. Issues & incidents", fr: "10. Incidents et alertes" },
+    title: { en: "12. Issues & incidents", fr: "12. Incidents et alertes" },
     subsections: [
       {
         heading: { en: "Raising an issue", fr: "Signaler un incident" },
@@ -311,7 +311,7 @@ const SECTIONS: Section[] = [
   {
     id: "admin",
     roles: ["super-admin", "company-admin"],
-    title: { en: "11. Administration", fr: "11. Administration" },
+    title: { en: "13. Administration", fr: "13. Administration" },
     subsections: [
       {
         heading: { en: "Users and invitations", fr: "Utilisateurs et invitations" },
@@ -346,7 +346,7 @@ const SECTIONS: Section[] = [
   {
     id: "security",
     roles: ["all"],
-    title: { en: "12. Security & data privacy", fr: "12. Sécurité et confidentialité" },
+    title: { en: "14. Security & data privacy", fr: "14. Sécurité et confidentialité" },
     subsections: [
       {
         heading: { en: "Access control", fr: "Contrôle d'accès" },
@@ -374,7 +374,7 @@ const SECTIONS: Section[] = [
   {
     id: "faq",
     roles: ["all"],
-    title: { en: "13. Frequently asked questions", fr: "13. Questions fréquentes" },
+    title: { en: "15. Frequently asked questions", fr: "15. Questions fréquentes" },
     subsections: [
       {
         heading: { en: "Why can't my client see a photo I just uploaded?", fr: "Pourquoi mon client ne voit-il pas une photo que je viens de téléverser ?" },
@@ -402,7 +402,7 @@ const SECTIONS: Section[] = [
   {
     id: "support",
     roles: ["all"],
-    title: { en: "14. Support", fr: "14. Assistance" },
+    title: { en: "16. Support", fr: "16. Assistance" },
     body: {
       en: "First line of support is your company administrator — they can reset passwords, change roles and reassign projects. For platform-level issues, your administrator can escalate to the BuildTrust team using the contact details provided during onboarding. Please include your project name, the time of the issue and a screenshot whenever possible.",
       fr: "Votre premier contact est l'administrateur de votre entreprise — il peut réinitialiser les mots de passe, modifier les rôles et réassigner les projets. Pour un problème de plateforme, votre administrateur peut escalader à l'équipe BuildTrust via les coordonnées fournies lors de votre intégration. Merci d'indiquer le nom du projet, l'heure de l'incident et une capture d'écran si possible.",
