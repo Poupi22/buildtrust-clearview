@@ -326,7 +326,7 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
               value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
           </div>
 
-          {type === "daily" && (
+          {(
             <>
               <RowTable
                 title="Personnel présent"
