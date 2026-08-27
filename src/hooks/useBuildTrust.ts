@@ -152,7 +152,7 @@ export function useCreateProject() {
         for (const entry of input.documents) {
           const file = entry instanceof File ? entry : entry.file;
           const caption = entry instanceof File ? file.name : entry.title;
-          const ext = file.name.split(".").pop();
+          const ext = safeFileExt(file.name);
           const path = `${data.id}/${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage
             .from("project-media")
@@ -588,7 +588,7 @@ export function useCreateProgressReport() {
       if (error) throw error;
       if (input.photos && input.photos.length) {
         for (const file of input.photos) {
-          const ext = file.name.split(".").pop();
+          const ext = safeFileExt(file.name);
           const path = `${input.project_id}/${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage.from("project-media").upload(path, file, { contentType: file.type });
           if (upErr) throw upErr;
@@ -750,7 +750,7 @@ export function useUploadMedia() {
   return useMutation({
     mutationFn: async (input: { project_id: string; file: File; caption?: string }) => {
       if (!user) throw new Error("Not authenticated");
-      const ext = input.file.name.split(".").pop();
+      const ext = safeFileExt(input.file.name);
       const path = `${input.project_id}/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("project-media")
