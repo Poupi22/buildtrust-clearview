@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useIsSuperAdmin } from "@/hooks/useBuildTrust";
+import { useMySignature, useRegisterSignature } from "@/hooks/usePlanning";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -391,7 +392,7 @@ function NotificationsSection() {
 
 /* -------------------- Registered signature (versioned, stamped on approvals) -------------------- */
 function SignatureSection() {
-  const { data: current, isLoading } = useSignatureProfile();
+  const { data: current, isLoading } = useMySignature();
   const register = useRegisterSignature();
   const [initials, setInitials] = useState("");
 
