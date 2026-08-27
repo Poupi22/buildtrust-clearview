@@ -549,7 +549,13 @@ export function useUploadProjectDocument() {
         documentId = doc.id;
       }
 
-      const path = `${input.project_id}/documents/${documentId}/v${version}-${input.file.name}`;
+      const safeDocName = input.file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]+/g, "-")
+        .replace(/-+/g, "-")
+        .slice(-80);
+      const path = `${input.project_id}/documents/${documentId}/v${version}-${safeDocName}`;
       const { error: upErr } = await supabase.storage.from("project-media").upload(path, input.file);
       if (upErr) throw upErr;
 
