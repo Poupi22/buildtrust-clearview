@@ -401,17 +401,27 @@ export function NewProjectDialog() {
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t bg-muted/30 px-6 py-4">
-          <Button type="button" variant="ghost" onClick={() => (step === 0 ? setOpen(false) : setStep(step - 1))}>
-            {step === 0 ? "Cancel" : <><ChevronLeft className="mr-1 h-4 w-4" /> Back</>}
-          </Button>
-          {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={next}>Next <ChevronRight className="ml-1 h-4 w-4" /></Button>
+          {creds ? (
+            <>
+              <span className="text-xs text-muted-foreground">Client access created</span>
+              <Button type="button" onClick={() => { setOpen(false); reset(); }}>Done</Button>
+            </>
           ) : (
-            <Button type="button" onClick={submit} disabled={createProject.isPending}>
-              {createProject.isPending ? "Creating..." : "Create project"}
-            </Button>
+            <>
+              <Button type="button" variant="ghost" onClick={() => (step === 0 ? setOpen(false) : setStep(step - 1))}>
+                {step === 0 ? "Cancel" : <><ChevronLeft className="mr-1 h-4 w-4" /> Back</>}
+              </Button>
+              {step < STEPS.length - 1 ? (
+                <Button type="button" onClick={next}>Next <ChevronRight className="ml-1 h-4 w-4" /></Button>
+              ) : (
+                <Button type="button" onClick={submit} disabled={createProject.isPending}>
+                  {createProject.isPending ? "Creating..." : "Create project"}
+                </Button>
+              )}
+            </>
           )}
         </div>
+
       </DialogContent>
     </Dialog>
   );
