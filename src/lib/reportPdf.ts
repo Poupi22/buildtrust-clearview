@@ -40,6 +40,10 @@ interface Report {
   materials?: MaterialRow[] | null;
   owner_instructions?: string | null;
   supervision_instructions?: string | null;
+  delays?: string | null;
+  corrective_actions?: string | null;
+  safety_observations?: string | null;
+  technical_observations?: string | null;
   signature_snapshot?: SignatureSnapshot | null;
   approver_signature_snapshot?: SignatureSnapshot | null;
 }
