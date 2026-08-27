@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { sanitizeFileName } from "@/lib/storage";
 
 export type PlanVersionStatus = "draft" | "submitted" | "active" | "archived";
 export type WeeklyPlanStatus = "draft" | "submitted" | "active" | "closed" | "void";
