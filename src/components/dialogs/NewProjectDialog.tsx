@@ -326,7 +326,33 @@ export function NewProjectDialog() {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 4 && creds && (
+            <div className="space-y-4 text-sm">
+              <div className="rounded-lg border bg-success/5 p-3">
+                {creds.created
+                  ? "Project created and client account provisioned. Share these credentials securely — the password is shown only once."
+                  : "Project created. This email already had an account and has been linked to the project as client."}
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Login URL</Label>
+                  <Input readOnly value={`${window.location.origin}/login`} className="font-mono text-xs" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input readOnly value={creds.email} className="font-mono text-xs" />
+                </div>
+                {creds.password && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Temporary password</Label>
+                    <Input readOnly value={creds.password} className="font-mono text-xs" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {step === 4 && !creds && (
             <div className="space-y-4 text-sm">
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Project details</h3>
@@ -339,8 +365,10 @@ export function NewProjectDialog() {
               </section>
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Client</h3>
-                <p>{form.client_user_id ? nameOf(form.client_user_id) : "No client linked"}</p>
+                <p>{form.client_full_name || "—"}</p>
+                <p className="text-xs text-muted-foreground">{form.client_email || "—"}</p>
               </section>
+
               <section className="rounded-lg border p-4">
                 <h3 className="mb-2 font-display font-semibold">Team ({members.length + 1})</h3>
                 <ul className="space-y-1">
