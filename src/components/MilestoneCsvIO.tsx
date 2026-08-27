@@ -33,6 +33,13 @@ async function decodeFile(file: File): Promise<string> {
   }
 }
 
+/** Accepts both "60.5" and French "60,5" */
+function num(v: any): number {
+  const s = String(v ?? "").trim().replace(/\s/g, "").replace(",", ".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function detectDelimiter(text: string): string {
   const firstLine = text.split(/\r?\n/)[0] ?? "";
   const semis = (firstLine.match(/;/g) || []).length;
@@ -110,7 +117,7 @@ export function MilestoneCsvIO({
         }
       }
     }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = `${projectCode}-milestones.csv`; a.click();
@@ -123,7 +130,7 @@ export function MilestoneCsvIO({
       ["Foundation", 20, "Excavation", "m3", 500, 60, ""].map(escape).join(","),
       ["Foundation", 20, "Rebar install", "kg", 1200, 40, ""].map(escape).join(","),
     ];
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = "milestones-template.csv"; a.click();
@@ -134,7 +141,7 @@ export function MilestoneCsvIO({
     if (!user) { toast.error("Not authenticated"); return; }
     setBusy(true);
     try {
-      const text = await file.text();
+      const text = await decodeFile(file);
       const rows = parseCsv(text);
       if (rows.length < 2) throw new Error("CSV is empty");
       const header = rows[0].map((h) => h.trim());
@@ -154,7 +161,7 @@ export function MilestoneCsvIO({
         if (r.every((c) => c.trim() === "")) continue;
         const mt = (r[idx.milestone_title] ?? "").trim();
         if (!mt) continue;
-        const mContrib = Number(r[idx.milestone_contribution_pct] ?? 0);
+        const mContrib = num(r[idx.milestone_contribution_pct]);
         const planned = idx.milestone_planned_date !== undefined ? (r[idx.milestone_planned_date]?.trim() || null) : null;
         const g = groups.get(mt) ?? { contribution: mContrib, planned, subs: [] };
         const st = (r[idx.sub_title] ?? "").trim();
@@ -162,8 +169,8 @@ export function MilestoneCsvIO({
           g.subs.push({
             title: st,
             unit: (r[idx.sub_unit] ?? "unit").trim() || "unit",
-            target_quantity: Number(r[idx.sub_target_quantity] ?? 0),
-            contribution_pct: Number(r[idx.sub_contribution_pct] ?? 0),
+            target_quantity: num(r[idx.sub_target_quantity]),
+            contribution_pct: num(r[idx.sub_contribution_pct]),
           });
         }
         groups.set(mt, g);
