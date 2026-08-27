@@ -168,37 +168,130 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    id: "reporting",
-    roles: ["engineer", "technician", "manager"],
-    title: { en: "6. Submitting reports", fr: "6. Soumettre des rapports" },
+    id: "planning",
+    roles: ["super-admin", "company-admin", "manager", "engineer", "project-lead", "technician", "client"],
+    title: { en: "6. Baseline plan & weekly work plan", fr: "6. Plan de référence et plan hebdomadaire" },
     intro: {
-      en: "Reports are the heart of the platform. They feed the dashboard, the client portal and the audit log.",
-      fr: "Les rapports sont au cœur de la plateforme. Ils alimentent le tableau de bord, le portail client et le journal d'audit.",
+      en: "Execution in BuildTrust is planning-driven. Nothing can be reported that has not first been planned: the Baseline Plan defines the contractual scope, and the Weekly Work Plan turns it into dated obligations for the field.",
+      fr: "L'exécution dans BuildTrust est pilotée par la planification. Rien ne peut être rapporté sans avoir été planifié : le Plan de référence définit le périmètre contractuel, et le Plan hebdomadaire le traduit en obligations datées pour le terrain.",
     },
     subsections: [
       {
-        heading: { en: "The wizard, step by step", fr: "L'assistant, étape par étape" },
+        heading: { en: "Creating a baseline version", fr: "Créer une version de référence" },
         body: {
-          en: "1) Weather: temperature, conditions, wind. 2) Activities: tasks performed, % completed, photos. 3) Manpower & equipment: workers on site, machinery used. 4) Issues: any blocker, incident or safety event with severity. Each step auto-saves a local draft so you do not lose data if the connection drops.",
-          fr: "1) Météo : température, conditions, vent. 2) Activités : tâches réalisées, % d'avancement, photos. 3) Effectifs et matériel : personnel présent, engins utilisés. 4) Incidents : tout blocage, événement ou alerte sécurité avec gravité. Chaque étape enregistre un brouillon local pour éviter toute perte en cas de coupure réseau.",
+          en: "Open Planning → Baseline plan. Create a version (V1, V2, …), list the planned activities with quantities, units, planned start/end dates and the linked milestone, and attach the signed planning document (PDF, schedule export). Submit the version for activation.",
+          fr: "Ouvrez Planification → Plan de référence. Créez une version (V1, V2, …), listez les activités planifiées avec quantités, unités, dates prévues de début/fin et le jalon associé, puis joignez le document de planification signé (PDF, export de planning). Soumettez la version pour activation.",
         },
       },
       {
-        heading: { en: "Photos and attachments", fr: "Photos et pièces jointes" },
+        heading: { en: "Activation and immutability", fr: "Activation et immuabilité" },
         body: {
-          en: "Photos taken from a mobile device are uploaded with GPS and timestamp metadata. They remain private until the report is approved and published. PDFs and other documents can be attached the same way.",
-          fr: "Les photos prises depuis un mobile sont téléversées avec leurs métadonnées GPS et horodatage. Elles restent privées jusqu'à l'approbation et la publication. Les PDF et autres documents peuvent être joints de la même façon.",
+          en: "Only a Super Admin activates a baseline version. Once active, the version becomes immutable — it can never be edited or deleted. Any change of scope requires creating a new version, which keeps the full contractual history auditable. The previously active version is archived, not overwritten.",
+          fr: "Seul un Super Admin active une version de référence. Une fois active, la version devient immuable — elle ne peut plus être modifiée ni supprimée. Tout changement de périmètre impose la création d'une nouvelle version, ce qui préserve un historique contractuel auditable. La version précédente est archivée, jamais écrasée.",
         },
       },
       {
-        heading: { en: "Submitting", fr: "Soumission" },
+        heading: { en: "Building the weekly work plan", fr: "Construire le plan hebdomadaire" },
         body: {
-          en: "When complete, tap Submit. The report enters the approval queue and your site engineer is notified immediately.",
-          fr: "Une fois complet, appuyez sur Soumettre. Le rapport entre dans la file d'approbation et votre ingénieur de site est notifié immédiatement.",
+          en: "In Planning → Weekly work plan, choose the week, tick the working days (non-working days are excluded from all obligations), then add the activities planned for each day with the responsible team member and the planned quantity. Activities must reference the active baseline.",
+          fr: "Dans Planification → Plan hebdomadaire, choisissez la semaine, cochez les jours travaillés (les jours non travaillés sont exclus de toute obligation), puis ajoutez les activités prévues pour chaque jour avec le responsable et la quantité planifiée. Les activités doivent référencer le plan de référence actif.",
+        },
+      },
+      {
+        heading: { en: "Locking the week", fr: "Verrouillage de la semaine" },
+        body: {
+          en: "Activating the weekly plan locks the calendar for that week and automatically generates the reporting obligations: one Daily Journal per working day per responsible technician, plus one Weekly Report at the end of the week. Locked weeks cannot be re-planned retroactively.",
+          fr: "L'activation du plan hebdomadaire verrouille le calendrier de la semaine et génère automatiquement les obligations de reporting : un Journal de chantier par jour travaillé et par technicien responsable, plus un Rapport hebdomadaire en fin de semaine. Une semaine verrouillée ne peut pas être replanifiée rétroactivement.",
         },
       },
     ],
   },
+  {
+    id: "reporting",
+    roles: ["engineer", "technician", "manager", "project-lead", "company-admin", "super-admin"],
+    title: { en: "7. Daily & weekly Journal de Chantier", fr: "7. Journal de chantier quotidien et hebdomadaire" },
+    intro: {
+      en: "BuildTrust uses one official site-journal template. The daily journal and the weekly journal share exactly the same structure — only the period and the name differ. Journals are written records: text and structured tables, no attachments. They constitute the legal journal of the project and are exportable as a chronological PDF.",
+      fr: "BuildTrust utilise un modèle officiel unique de journal de chantier. Le journal quotidien et le journal hebdomadaire partagent exactement la même structure — seuls la période et le nom changent. Les journaux sont des écrits : texte et tableaux structurés, sans pièces jointes. Ils constituent le journal officiel du projet et sont exportables en PDF chronologique.",
+    },
+    subsections: [
+      {
+        heading: { en: "Official template sections", fr: "Sections du modèle officiel" },
+        body: {
+          en: "Header (project, site, date, company, control mission, weather, working hours) · Personnel (position / headcount) · Equipment (designation, running / idle / breakdown) · Works executed (designation, observations) · Materials (designation, morning stock, delivery, consumption, evening stock) · Instructions from the owner and the control mission · HSE and technical observations · Corrective actions and delays · Visas and signatures.",
+          fr: "En-tête (projet, chantier, date, entreprise, mission de contrôle, météo, horaires) · Personnel (poste / nombre) · Matériel (désignation, marche / immobilisé / panne) · Travaux exécutés (désignation, observations) · Matériaux (désignation, stock matin, approvisionnement, consommé, stock soir) · Instructions du maître d'ouvrage et de la mission de contrôle · Observations HSE et techniques · Actions correctives et retards · Visas et signatures.",
+        },
+      },
+      {
+        heading: { en: "Daily journal (internal)", fr: "Journal quotidien (interne)" },
+        body: {
+          en: "Submitted every working day by the responsible technician, before the deadline set by the workflow settings (server time). Daily journals are visible to engineers, project leads and administrators — never to the client. They can be saved as a draft and completed later, as long as the deadline has not passed.",
+          fr: "Soumis chaque jour travaillé par le technicien responsable, avant l'échéance définie dans les paramètres du flux (heure serveur). Les journaux quotidiens sont visibles par les ingénieurs, chefs de projet et administrateurs — jamais par le client. Ils peuvent être enregistrés en brouillon et complétés plus tard, tant que l'échéance n'est pas dépassée.",
+        },
+      },
+      {
+        heading: { en: "Weekly report (client-facing)", fr: "Rapport hebdomadaire (destiné au client)" },
+        body: {
+          en: "Submitted at the end of each planned week, using the same journal template with a week start and end date. It consolidates the week's execution, compares planned versus actual quantities and states delays and corrective actions. Engineers and administrators may edit it before approval; once approved and published it becomes visible in the client portal.",
+          fr: "Soumis à la fin de chaque semaine planifiée, avec le même modèle de journal et des dates de début et de fin de semaine. Il consolide l'exécution de la semaine, compare quantités prévues et réalisées et précise retards et actions correctives. Les ingénieurs et administrateurs peuvent le modifier avant approbation ; une fois approuvé et publié, il devient visible dans le portail client.",
+        },
+      },
+      {
+        heading: { en: "Anti-backdating rules", fr: "Règles anti-antidatage" },
+        body: {
+          en: "The report date can never be in the future, and the submission timestamp is taken from the server, not from your device. A journal submitted after its deadline is flagged as late; a journal never submitted becomes a permanent ABSENT compliance event that cannot be removed.",
+          fr: "La date d'un rapport ne peut jamais être dans le futur, et l'horodatage de soumission provient du serveur, non de votre appareil. Un journal soumis après l'échéance est marqué en retard ; un journal jamais soumis devient un événement de conformité ABSENT permanent et ineffaçable.",
+        },
+      },
+      {
+        heading: { en: "PDF journal export", fr: "Export PDF du journal" },
+        body: {
+          en: "From Reports, export the project journal as a PDF. Entries are printed in chronological order with the official layout, author, role, timestamps, signature snapshots and page numbering. You may include or exclude internal notes depending on the recipient.",
+          fr: "Depuis Rapports, exportez le journal du projet en PDF. Les entrées sont imprimées dans l'ordre chronologique avec la mise en page officielle, l'auteur, le rôle, les horodatages, les signatures enregistrées et la pagination. Vous pouvez inclure ou exclure les notes internes selon le destinataire.",
+        },
+      },
+    ],
+  },
+  {
+    id: "compliance",
+    roles: ["super-admin", "company-admin", "manager", "engineer", "project-lead", "technician"],
+    title: { en: "8. Obligations & compliance", fr: "8. Obligations et conformité" },
+    intro: {
+      en: "Compliance measures whether the reporting duties generated by the plan were actually honoured, on time.",
+      fr: "La conformité mesure si les obligations de reporting générées par le plan ont réellement été honorées, dans les délais.",
+    },
+    subsections: [
+      {
+        heading: { en: "How obligations are created", fr: "Création des obligations" },
+        body: {
+          en: "Obligations are never created by hand. Activating a weekly work plan generates one obligation per working day and responsible person, plus the weekly obligation. Each obligation carries a due date and time computed on the server.",
+          fr: "Les obligations ne sont jamais créées manuellement. L'activation d'un plan hebdomadaire génère une obligation par jour travaillé et par responsable, plus l'obligation hebdomadaire. Chaque obligation porte une date et une heure d'échéance calculées côté serveur.",
+        },
+      },
+      {
+        heading: { en: "Statuses", fr: "Statuts" },
+        body: {
+          en: "PENDING (not yet due) · SUBMITTED (fulfilled on time) · LATE (fulfilled after the deadline) · ABSENT (deadline passed with no submission). ABSENT is terminal and irreversible — it remains in the record even if a report is written afterwards.",
+          fr: "EN ATTENTE (échéance non atteinte) · SOUMIS (rempli à temps) · EN RETARD (rempli après l'échéance) · ABSENT (échéance dépassée sans soumission). ABSENT est terminal et irréversible — il reste au dossier même si un rapport est rédigé ensuite.",
+        },
+      },
+      {
+        heading: { en: "Compliance dashboard", fr: "Tableau de bord de conformité" },
+        body: {
+          en: "Compliance shows, per project and per person, the reporting rate, the number of late and absent entries and the trend over time. Use it in weekly coordination meetings and for contractual evidence.",
+          fr: "La page Conformité affiche, par projet et par personne, le taux de reporting, le nombre de retards et d'absences et la tendance dans le temps. Utilisez-la en réunion hebdomadaire de coordination et comme preuve contractuelle.",
+        },
+      },
+      {
+        heading: { en: "Planned vs actual", fr: "Prévu / réalisé" },
+        body: {
+          en: "Quantities declared in journals are compared with the quantities planned in the weekly plan and the baseline. Deviations feed the completion percentage, the delay rate and the client-facing progress indicators.",
+          fr: "Les quantités déclarées dans les journaux sont comparées aux quantités prévues dans le plan hebdomadaire et le plan de référence. Les écarts alimentent le pourcentage d'avancement, le taux de retard et les indicateurs d'avancement présentés au client.",
+        },
+      },
+    ],
+  },
+
   {
     id: "approvals",
     roles: ["super-admin", "company-admin", "manager", "engineer"],
