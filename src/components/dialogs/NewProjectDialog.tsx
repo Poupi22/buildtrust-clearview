@@ -32,7 +32,7 @@ export function NewProjectDialog() {
   const isAdmin = useIsAdmin();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
+  const [form, setForm] = useState({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "", client_phone: "", client_address: "", client_company: "" });
   const [creds, setCreds] = useState<{ email: string; password: string | null; created: boolean } | null>(null);
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -61,7 +61,7 @@ export function NewProjectDialog() {
 
   const reset = () => {
     setStep(0);
-    setForm({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
+    setForm({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "", client_phone: "", client_address: "", client_company: "" });
     setMembers([]);
     setDocs([]);
     setMemberSearch("");
@@ -122,7 +122,13 @@ export function NewProjectDialog() {
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
-        client: { email: form.client_email.trim(), full_name: form.client_full_name.trim() },
+        client: {
+          email: form.client_email.trim(),
+          full_name: form.client_full_name.trim(),
+          phone: form.client_phone.trim(),
+          address: form.client_address.trim(),
+          company: form.client_company.trim(),
+        },
         members,
         documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
@@ -228,6 +234,20 @@ export function NewProjectDialog() {
                   <Label htmlFor="client_email">Client email *</Label>
                   <Input id="client_email" type="email" placeholder="client@company.com" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} />
                 </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="client_phone">Phone <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Input id="client_phone" type="tel" placeholder="+1 555 000 0000" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="client_company">Company <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Input id="client_company" placeholder="Client organization" value={form.client_company} onChange={(e) => setForm({ ...form, client_company: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="client_address">Address <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Input id="client_address" placeholder="Street, city, country" value={form.client_address} onChange={(e) => setForm({ ...form, client_address: e.target.value })} />
               </div>
               <p className="text-xs text-muted-foreground">
                 A temporary password is generated at creation and shown once. The client gets read-only access to approved and published data only.
@@ -367,6 +387,11 @@ export function NewProjectDialog() {
                 <h3 className="mb-2 font-display font-semibold">Client</h3>
                 <p>{form.client_full_name || "—"}</p>
                 <p className="text-xs text-muted-foreground">{form.client_email || "—"}</p>
+                {(form.client_phone || form.client_company || form.client_address) && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {[form.client_phone, form.client_company, form.client_address].filter(Boolean).join(" · ")}
+                  </p>
+                )}
               </section>
 
               <section className="rounded-lg border p-4">
