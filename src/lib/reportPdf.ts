@@ -178,18 +178,13 @@ export function generateJournalPdf(
       section("Instructions du maître de l'ouvrage", r.owner_instructions);
       section("Instructions de la mission de contrôle", r.supervision_instructions);
       if (r.summary) section("Résumé", r.summary);
+      section("Réalisations", r.achievements);
       if (r.challenges) section("Difficultés / blocages", r.challenges);
-    } else {
-      const section = (label: string, body?: string | null) => {
-        if (!body) return;
-        writeText(label, 10, true);
-        writeText(body, 11);
-        y += 4;
-      };
-      section("Summary", r.summary);
-      section("Achievements", r.achievements);
-      section("Challenges / blockers", r.challenges);
-      section("Plan for next week", r.next_plan);
+      section("Retards constatés", r.delays);
+      section("Actions correctives", r.corrective_actions);
+      section("Observations HSE / sécurité", r.safety_observations);
+      section("Observations techniques", r.technical_observations);
+      section(r.report_type === "weekly" ? "Plan de la semaine prochaine" : "Activités du lendemain", r.next_plan);
     }
     if (includeInternal) {
       if (r.notes) { writeText("Internal notes", 10, true); writeText(r.notes, 11); y += 4; }
