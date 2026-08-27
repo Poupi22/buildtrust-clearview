@@ -20,6 +20,8 @@ export const baseResources = {
       nav: {
         dashboard: "Dashboard",
         projects: "Projects",
+        planning: "Planning",
+        compliance: "Compliance",
         reports: "Reports",
         issues: "Issues",
         approvals: "Approvals",
@@ -85,6 +87,8 @@ export const baseResources = {
       nav: {
         dashboard: "Tableau de bord",
         projects: "Projets",
+        planning: "Planification",
+        compliance: "Conformité",
         reports: "Rapports",
         issues: "Incidents",
         approvals: "Approbations",
