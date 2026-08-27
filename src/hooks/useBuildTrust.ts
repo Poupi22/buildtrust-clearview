@@ -165,7 +165,8 @@ export function useCreateProject() {
           if (mediaErr) throw mediaErr;
         }
       }
-      return data;
+      return { ...data, client_credentials: clientCredentials };
+
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["projects"] });
