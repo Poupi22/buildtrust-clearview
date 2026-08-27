@@ -504,7 +504,7 @@ const SECTIONS: Section[] = [
   },
 ];
 
-export default function Manual() {
+export default function Manual({ embedded = false }: { embedded?: boolean }) {
   const { t, i18n } = useTranslation();
   const { role } = useAuth();
   const lang = (i18n.language?.startsWith("fr") ? "fr" : "en") as "en" | "fr";
@@ -531,10 +531,18 @@ export default function Manual() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-primary" />
-            {t("manual.title")}
-          </h1>
+          {embedded ? (
+            <h2 className="text-lg font-display font-bold flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {t("manual.title")}
+            </h2>
+          ) : (
+            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-primary" />
+              {t("manual.title")}
+            </h1>
+          )}
+
           <p className="text-muted-foreground text-sm mt-1">
             {lang === "fr"
               ? "Guide complet de la plateforme BuildTrust — adapté à votre rôle."
