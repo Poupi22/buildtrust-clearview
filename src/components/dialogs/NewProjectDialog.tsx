@@ -61,10 +61,11 @@ export function NewProjectDialog() {
 
   const reset = () => {
     setStep(0);
-    setForm({ title: "", type: "", location: "", start_date: "", client_user_id: "" });
+    setForm({ title: "", type: "", location: "", start_date: "", client_full_name: "", client_email: "" });
     setMembers([]);
     setDocs([]);
     setMemberSearch("");
+    setCreds(null);
   };
 
   const addFiles = (list: FileList | null) => {
@@ -83,43 +84,60 @@ export function NewProjectDialog() {
   const setMemberRole = (userId: string, role: MemberRole) =>
     setMembers((prev) => prev.map((m) => (m.user_id === userId ? { ...m, role } : m)));
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.client_email.trim());
+
   const stepValid = (index: number) => {
     if (index === 0) return form.title.trim().length > 0;
+    if (index === 1) return form.client_full_name.trim().length > 0 && emailValid;
     if (index === 3) return docs.every((d) => d.title.trim().length > 0);
     return true;
   };
 
+  const stepError = (index: number) =>
+    index === 0
+      ? "Project title is required"
+      : index === 1
+        ? "Client full name and a valid email are required"
+        : "Each document needs a title";
+
   const next = () => {
     if (!stepValid(step)) {
-      toast.error(step === 0 ? "Project title is required" : "Each document needs a title");
+      toast.error(stepError(step));
       return;
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
 
   const submit = async () => {
-    if (!stepValid(0)) {
-      toast.error("Project title is required");
-      setStep(0);
-      return;
+    for (const i of [0, 1, 3]) {
+      if (!stepValid(i)) {
+        toast.error(stepError(i));
+        setStep(i);
+        return;
+      }
     }
     try {
-      await createProject.mutateAsync({
+      const created: any = await createProject.mutateAsync({
         title: form.title.trim(),
         type: form.type || undefined,
         location: form.location || undefined,
         start_date: form.start_date || null,
-        client_user_id: form.client_user_id || null,
+        client: { email: form.client_email.trim(), full_name: form.client_full_name.trim() },
         members,
         documents: docs.map((d) => ({ file: d.file, title: d.title.trim() })),
       });
       toast.success("Project created");
-      setOpen(false);
-      reset();
+      if (created?.client_credentials) {
+        setCreds(created.client_credentials);
+      } else {
+        setOpen(false);
+        reset();
+      }
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create project");
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
