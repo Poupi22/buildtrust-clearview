@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useIsSuperAdmin } from "@/hooks/useBuildTrust";
+import { useMySignature, useRegisterSignature } from "@/hooks/usePlanning";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -389,43 +390,50 @@ function NotificationsSection() {
   );
 }
 
-/* -------------------- Approval signature (engineers/admins) -------------------- */
+/* -------------------- Registered signature (versioned, stamped on approvals) -------------------- */
 function SignatureSection() {
-  const { user } = useAuth();
-  const [sig, setSig] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("user_preferences").select("approval_signature").eq("user_id", user.id).maybeSingle();
-      setSig((data?.approval_signature as string) ?? "");
-    })();
-  }, [user]);
+  const { data: current, isLoading } = useMySignature();
+  const register = useRegisterSignature();
+  const [initials, setInitials] = useState("");
 
   const save = async () => {
-    if (!user) return;
-    setBusy(true);
+    if (!initials.trim()) { toast.error("Enter your initials"); return; }
     try {
-      const { error } = await supabase.from("user_preferences").upsert({ user_id: user.id, approval_signature: sig });
-      if (error) throw error;
-      toast.success("Signature saved");
+      await register.mutateAsync({ kind: "initials", initials: initials.trim().toUpperCase() });
+      toast.success("Signature registered — it will be stamped on your future reports and approvals");
+      setInitials("");
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
-    } finally {
-      setBusy(false);
     }
   };
 
   return (
     <div className="metric-card max-w-2xl space-y-4">
       <div>
-        <h3 className="font-display font-bold">Approval signature</h3>
-        <p className="text-sm text-muted-foreground">Default text pre-filled when you review or approve a report.</p>
+        <h3 className="font-display font-bold">Registered signature</h3>
+        <p className="text-sm text-muted-foreground">
+          Your registered signature is snapshotted onto every report you submit or approve. Re-registering creates a new version; past reports keep the signature that was current at the time.
+        </p>
       </div>
-      <Textarea value={sig} onChange={(e) => setSig(e.target.value)} rows={4} maxLength={500} placeholder="e.g. Reviewed and approved by Site Engineer." />
+      {isLoading ? (
+        <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : current ? (
+        <div className="rounded-lg border bg-muted/40 p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Current signature (v{(current as any).version ?? 1})</p>
+            <p className="text-xs text-muted-foreground">Registered {(current as any).created_at ? new Date((current as any).created_at).toLocaleDateString() : ""}</p>
+          </div>
+          <span className="font-display text-2xl font-bold tracking-widest text-primary">{(current as any).initials ?? "—"}</span>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">No signature registered yet. Register one to sign reports and approvals.</p>
+      )}
+      <div className="space-y-2">
+        <Label htmlFor="sig-initials">{current ? "Re-register (new version)" : "Your initials"}</Label>
+        <Input id="sig-initials" value={initials} onChange={(e) => setInitials(e.target.value)} maxLength={6} placeholder="e.g. A.P." className="max-w-[200px] uppercase" />
+      </div>
       <div className="flex justify-end">
-        <Button onClick={save} disabled={busy}>{busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Save</Button>
+        <Button onClick={save} disabled={register.isPending}>{register.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{current ? "Register new version" : "Register signature"}</Button>
       </div>
     </div>
   );
