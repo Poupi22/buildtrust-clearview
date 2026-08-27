@@ -390,7 +390,6 @@ export function ReportFormDialog({ type, defaultProjectId, existing, trigger, op
                 </div>
               </div>
             </>
-          )}
 
           <div>
             <Label>Achievements</Label>
