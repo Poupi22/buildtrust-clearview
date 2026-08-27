@@ -16,7 +16,6 @@ import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import NotFound from "./pages/NotFound";
 import ClientPortal from "./pages/ClientPortal";
 import TechnicianPortal from "./pages/TechnicianPortal";
 import Login from "./pages/Login";
