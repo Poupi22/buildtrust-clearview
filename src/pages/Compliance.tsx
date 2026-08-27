@@ -19,7 +19,7 @@ export default function Compliance() {
   const { data: obligations = [] } = useObligations(scoped);
   const { data: events = [] } = useComplianceEvents(scoped);
   const { data: reports = [] } = useReports(scoped);
-  const { data: isSuperAdmin } = useIsSuperAdmin();
+  const isSuperAdmin = useIsSuperAdmin();
   const annotate = useAnnotateComplianceEvent();
 
   const inRange = (d: string) => (!from || d >= from) && (!to || d <= to);
