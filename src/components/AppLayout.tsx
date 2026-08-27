@@ -11,7 +11,6 @@ import {
   Gauge,
   Users,
   Settings,
-  BookOpen,
   LogOut,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
@@ -28,7 +27,6 @@ const navItems = [
   { key: "issues", icon: AlertTriangle, path: "/issues" },
   { key: "approvals", icon: CheckSquare, path: "/approvals" },
   { key: "team", icon: Users, path: "/team" },
-  { key: "manual", icon: BookOpen, path: "/manual" },
   { key: "settings", icon: Settings, path: "/settings" },
 ];
 

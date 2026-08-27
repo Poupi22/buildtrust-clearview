@@ -15,7 +15,6 @@ import Issues from "./pages/Issues";
 import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
-import Manual from "./pages/Manual";
 import NotFound from "./pages/NotFound";
 import ClientPortal from "./pages/ClientPortal";
 import TechnicianPortal from "./pages/TechnicianPortal";
@@ -54,7 +53,6 @@ function AppRoutes() {
       <Routes>
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/settings" element={<ClientPortal />} />
-        <Route path="/manual" element={<ClientPortal />} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
       </Routes>
     );
@@ -66,7 +64,6 @@ function AppRoutes() {
       <Routes>
         <Route path="/technician" element={<TechnicianPortal />} />
         <Route path="/settings" element={<TechnicianPortal />} />
-        <Route path="/manual" element={<TechnicianPortal />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
       </Routes>
     );
@@ -87,7 +84,6 @@ function AppRoutes() {
         <Route path="/approvals" element={<Approvals />} />
         <Route path="/team" element={<Team />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/manual" element={<Manual />} />
       </Route>
       <Route path="/portal" element={<ClientPortal />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
