@@ -69,7 +69,13 @@ export function useSubmitPlanVersion() {
 
       let file_path: string | null = null;
       if (input.file) {
-        const path = `${input.project_id}/plans/v${nextNo}-${Date.now()}-${input.file.name}`;
+        const safeName = input.file.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9._-]+/g, "-")
+          .replace(/-+/g, "-")
+          .slice(-80);
+        const path = `${input.project_id}/plans/v${nextNo}-${Date.now()}-${safeName}`;
         const { error: upErr } = await supabase.storage.from("project-media").upload(path, input.file);
         if (upErr) throw upErr;
         file_path = path;
