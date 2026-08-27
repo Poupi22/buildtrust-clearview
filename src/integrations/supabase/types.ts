@@ -925,6 +925,7 @@ export type Database = {
       recalc_milestone: { Args: { _m: string }; Returns: undefined }
       recalc_project: { Args: { _p: string }; Returns: undefined }
       recalc_sub_milestone: { Args: { _sub: string }; Returns: undefined }
+      shares_project: { Args: { _a: string; _b: string }; Returns: boolean }
     }
     Enums: {
       app_role:

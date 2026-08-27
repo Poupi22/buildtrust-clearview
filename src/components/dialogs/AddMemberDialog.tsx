@@ -41,13 +41,16 @@ export function AddMemberDialog({ projectId }: { projectId: string }) {
           <div>
             <Label>User</Label>
             <Select value={userId} onValueChange={setUserId}>
-              <SelectTrigger><SelectValue placeholder="Pick a user" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={available.length ? "Pick a user" : "No available users"} /></SelectTrigger>
               <SelectContent>
                 {available.map((p: any) => (
                   <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || p.user_id.slice(0, 8)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {available.length === 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">Everyone you can see is already a member. Create users in Settings → Users.</p>
+            )}
           </div>
           <div>
             <Label>Role</Label>

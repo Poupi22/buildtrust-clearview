@@ -81,6 +81,7 @@ export function useCreateProject() {
       location?: string;
       start_date?: string | null;
       client_user_id?: string | null;
+      members?: Array<{ user_id: string; role: "manager" | "engineer" | "technician" | "client" }>;
       documents?: Array<File | { file: File; title: string }>;
     }) => {
       if (!user) throw new Error("Not authenticated");
@@ -103,14 +104,24 @@ export function useCreateProject() {
         user_id: user.id,
         role: "manager",
       });
-      if (input.client_user_id) {
-        const { error: cErr } = await supabase.from("project_members").insert({
-          project_id: data.id,
-          user_id: input.client_user_id,
-          role: "client",
-        });
-        if (cErr) throw cErr;
+      const extra = new Map<string, "manager" | "engineer" | "technician" | "client">();
+      for (const m of input.members ?? []) {
+        if (m.user_id && m.user_id !== user.id) extra.set(m.user_id, m.role);
       }
+      if (input.client_user_id && input.client_user_id !== user.id) {
+        extra.set(input.client_user_id, "client");
+      }
+      if (extra.size) {
+        const { error: mErr } = await supabase.from("project_members").insert(
+          Array.from(extra.entries()).map(([user_id, role]) => ({
+            project_id: data.id,
+            user_id,
+            role,
+          }))
+        );
+        if (mErr) throw mErr;
+      }
+
       if (input.documents && input.documents.length) {
         for (const entry of input.documents) {
           const file = entry instanceof File ? entry : entry.file;
@@ -133,7 +144,10 @@ export function useCreateProject() {
       }
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["projects"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects"] });
+      qc.invalidateQueries({ queryKey: ["project_members"] });
+    },
   });
 }
 
