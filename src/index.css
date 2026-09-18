@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -60,8 +58,17 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 

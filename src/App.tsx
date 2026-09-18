@@ -20,6 +20,7 @@ import ClientPortal from "./pages/ClientPortal";
 import TechnicianPortal from "./pages/TechnicianPortal";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
+import Index from "./pages/Index";
 import { Loader2 } from "lucide-react";
 
 
@@ -40,9 +41,10 @@ function AppRoutes() {
   if (!session) {
     return (
       <Routes>
+        <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
