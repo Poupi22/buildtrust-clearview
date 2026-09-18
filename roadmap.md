@@ -5,4 +5,4 @@
 - [x] Link homepage actions to sign-in and NED contact
 - [x] Preserve authenticated role-based destinations
 - [x] Update app metadata and font loading
-- [ ] Verify desktop, mobile, routing, and preview health
+- [x] Verify desktop, mobile, routing, and preview health

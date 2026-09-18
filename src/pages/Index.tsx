@@ -235,7 +235,7 @@ export default function Index() {
               {t.value.items.map((item, index) => {
                 const Icon = featureIcons[index];
                 return (
-                  <motion.article {...reveal} transition={{ duration: 0.45, delay: index * 0.07 }} key={item.title} className="border-b p-6 md:even:border-l lg:border-b-0 lg:border-l lg:first:border-l-0">
+                  <motion.article key={item.title} {...reveal} transition={{ duration: 0.45, delay: index * 0.07 }} className="border-b p-6 md:even:border-l lg:border-b-0 lg:border-l lg:first:border-l-0">
                     <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div>
                     <h3 className="mt-6 text-lg font-bold">{item.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.text}</p>
@@ -255,7 +255,7 @@ export default function Index() {
             </motion.div>
             <div className="mt-14 grid gap-px overflow-hidden rounded-lg border bg-border lg:grid-cols-5">
               {t.workflow.steps.map(([number, title, text], index) => (
-                <motion.article {...reveal} transition={{ duration: 0.45, delay: index * 0.06 }} key={number} className="relative min-h-64 bg-card p-6">
+                <motion.article key={number} {...reveal} transition={{ duration: 0.45, delay: index * 0.06 }} className="relative min-h-64 bg-card p-6">
                   <span className="text-sm font-bold text-accent">{number}</span>
                   <div className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full border text-muted-foreground"><ChevronRight className="h-4 w-4" /></div>
                   <h3 className="mt-20 text-lg font-bold">{title}</h3>
@@ -295,7 +295,7 @@ export default function Index() {
             <div className="mt-14 grid gap-5 md:grid-cols-3">
               {t.audiences.items.map(([title, text], index) => {
                 const Icon = audienceIcons[index];
-                return <motion.article {...reveal} transition={{ duration: 0.45, delay: index * 0.08 }} key={title} className="rounded-lg border bg-card p-7 shadow-sm"><Icon className="h-7 w-7 text-primary" /><h3 className="mt-8 text-xl font-bold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{text}</p></motion.article>;
+                return <motion.article key={title} {...reveal} transition={{ duration: 0.45, delay: index * 0.08 }} className="rounded-lg border bg-card p-7 shadow-sm"><Icon className="h-7 w-7 text-primary" /><h3 className="mt-8 text-xl font-bold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{text}</p></motion.article>;
               })}
             </div>
           </div>
