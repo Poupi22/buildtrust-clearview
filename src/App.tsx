@@ -47,8 +47,8 @@ function AppRoutes() {
     );
   }
 
-  // Client role → portal only
-  if (role === "client") {
+  // Client & client-assistant → read-only client portal
+  if (role === "client" || role === "client-assistant") {
     return (
       <Routes>
         <Route path="/portal" element={<ClientPortal />} />
@@ -58,8 +58,8 @@ function AppRoutes() {
     );
   }
 
-  // Technician role → field portal + settings
-  if (role === "technician") {
+  // Technician & project-lead → field portal + settings
+  if (role === "technician" || role === "project-lead") {
     return (
       <Routes>
         <Route path="/technician" element={<TechnicianPortal />} />
