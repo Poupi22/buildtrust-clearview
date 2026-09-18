@@ -142,7 +142,7 @@ export default function Reports() {
 }
 
 function ReportList({
-  reports, currentUserId, canManage, onView, onEdit, onDelete, isWeekly, onPublish,
+  reports, currentUserId, canManage, onView, onEdit, onDelete, isWeekly,
 }: {
   reports: any[];
   currentUserId?: string;
@@ -151,7 +151,6 @@ function ReportList({
   onEdit: (r: any) => void;
   onDelete: (id: string) => void;
   isWeekly?: boolean;
-  onPublish?: (r: any) => void;
 }) {
   if (reports.length === 0) {
     return (
@@ -165,8 +164,10 @@ function ReportList({
     <div className="space-y-3">
       {reports.map((r) => {
         const isAuthor = r.author_id === currentUserId;
-        const canEdit = canManage || (isAuthor && ["draft", "rejected"].includes(r.status));
-        const canDelete = canManage || (isAuthor && ["draft", "rejected"].includes(r.status));
+        const state = r.state ?? r.status;
+        const editable = state !== "approved";
+        const canEdit = editable && (canManage || (isAuthor && ["draft", "pending", "rejected"].includes(state)));
+        const canDelete = editable && (canManage || (isAuthor && ["draft", "pending", "rejected"].includes(state)));
         const dateLabel = r.report_type === "weekly" && r.week_start
           ? `${r.week_start} → ${r.week_end}`
           : r.report_date;
@@ -177,9 +178,9 @@ function ReportList({
                 <div className="flex items-center gap-2 flex-wrap">
                   <FileText className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">{r.title || dateLabel}</span>
-                  <StatusBadge status={r.status} />
+                  <StatusBadge status={state} />
                   {r.is_published && (
-                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Published</span>
+                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Visible to client</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{dateLabel}</p>
@@ -189,11 +190,6 @@ function ReportList({
                 <Button size="icon" variant="ghost" onClick={() => onView(r)} title="View">
                   <Eye className="h-4 w-4" />
                 </Button>
-                {isWeekly && onPublish && r.status !== "approved" && (
-                  <Button size="icon" variant="ghost" onClick={() => onPublish(r)} title="Approve & publish" className="text-success">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </Button>
-                )}
                 {canEdit && (
                   <Button size="icon" variant="ghost" onClick={() => onEdit(r)} title="Edit">
                     <Pencil className="h-4 w-4" />
@@ -209,29 +205,6 @@ function ReportList({
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function ReportBody({ r, canSeeInternal }: { r: any; canSeeInternal: boolean }) {
-  const Section = ({ label, body }: { label: string; body?: string | null }) =>
-    body ? (
-      <div>
-        <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-1">{label}</p>
-        <p className="text-sm whitespace-pre-wrap">{body}</p>
-      </div>
-    ) : null;
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
-        {r.weather && <span>Weather: {r.weather}</span>}
-        {typeof r.workforce_count === "number" && r.workforce_count > 0 && <span>Workforce: {r.workforce_count}</span>}
-      </div>
-      <Section label="Summary" body={r.summary} />
-      <Section label="Achievements" body={r.achievements} />
-      <Section label="Challenges / blockers" body={r.challenges} />
-      <Section label={r.report_type === "weekly" ? "Plan for next week" : "Next-day activities"} body={r.next_plan} />
-      {canSeeInternal && <Section label="Internal notes" body={r.notes} />}
     </div>
   );
 }
