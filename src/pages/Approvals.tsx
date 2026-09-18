@@ -5,7 +5,7 @@ import { useReports, useReviewReport, useMilestones, useReviewMilestone, useProg
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProgressReportDetailsDialog } from "@/components/dialogs/ProgressReportDetailsDialog";
-import { WeeklyReportDetailsDialog } from "@/components/dialogs/WeeklyReportDetailsDialog";
+import { ReportReviewDialog } from "@/components/review/ReportReviewDialog";
 import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -23,7 +23,10 @@ export default function Approvals() {
   const [editReport, setEditReport] = useState<any | null>(null);
   const [viewMilestone, setViewMilestone] = useState<any | null>(null);
 
-  const pendingReports = reports.filter((r: any) => r.report_type === "weekly" && (r.status === "submitted" || r.status === "under-review"));
+  const pendingReports = reports.filter((r: any) => {
+    const st = r.state ?? r.status;
+    return st === "submitted" || st === "under_review" || st === "under-review";
+  });
   const pendingMilestones = milestones.filter((m: any) => m.review_status === "pending_review");
   const pendingProgress = progress.filter((p: any) => p.status === "submitted");
   const totalPending = pendingReports.length + pendingMilestones.length + pendingProgress.length;
@@ -33,7 +36,7 @@ export default function Approvals() {
   const decideReport = async (id: string, project_id: string, decision: "approved" | "rejected") => {
     try {
       await reviewReport.mutateAsync({ id, project_id, decision });
-      toast.success(decision === "approved" ? "Report published to client" : "Report rejected");
+      toast.success(decision === "approved" ? "Report approved" : "Report rejected");
     } catch (err: any) {
       toast.error(err.message ?? "Failed");
     }
@@ -155,14 +158,17 @@ export default function Approvals() {
           {pendingReports.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" /> Weekly Reports ({pendingReports.length})
+                <FileText className="h-4 w-4 text-primary" /> Reports ({pendingReports.length})
               </h2>
               {pendingReports.map((r: any) => (
                 <div key={r.id} className="metric-card">
                   <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold">{r.title || `Week of ${r.week_start} → ${r.week_end}`}</span>
-                      <StatusBadge status={r.status} />
+                      <span className="text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded font-bold">{r.report_type ?? "daily"}</span>
+                      <span className="font-semibold">
+                        {r.title || (r.report_type === "weekly" ? `Week of ${r.week_start} → ${r.week_end}` : r.report_date)}
+                      </span>
+                      <StatusBadge status={r.state ?? r.status} />
                     </div>
                   </div>
                   {r.summary && <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">{r.summary}</p>}
@@ -176,7 +182,7 @@ export default function Approvals() {
                       <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
                     </Button>
                     <Button className="flex-1 bg-success hover:bg-success/90 text-success-foreground" onClick={() => decideReport(r.id, r.project_id, "approved")} disabled={reviewReport.isPending}>
-                      Approve &amp; Publish
+                      {r.report_type === "weekly" ? "Approve & Publish" : "Approve"}
                     </Button>
                     <Button variant="destructive" className="flex-1" onClick={() => decideReport(r.id, r.project_id, "rejected")} disabled={reviewReport.isPending}>
                       Reject
@@ -189,15 +195,17 @@ export default function Approvals() {
         </div>
       )}
 
-      <WeeklyReportDetailsDialog
+      <ReportReviewDialog
+        report={viewReport}
         open={!!viewReport}
         onOpenChange={(o) => !o && setViewReport(null)}
-        report={viewReport}
+        canManage
+        onEdit={(r) => setEditReport(r)}
       />
 
       {editReport && (
         <ReportFormDialog
-          type="weekly"
+          type={editReport.report_type ?? "weekly"}
           existing={editReport}
           defaultProjectId={editReport.project_id}
           trigger={null as any}
