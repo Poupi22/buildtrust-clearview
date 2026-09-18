@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
+  Home,
   LayoutDashboard,
   FolderKanban,
   FileText,
