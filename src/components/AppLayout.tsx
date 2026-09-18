@@ -117,7 +117,7 @@ export function MobileBottomNav() {
 }
 
 export function TopBar() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-card px-4 py-3 lg:px-6">
       <div className="lg:hidden">
@@ -132,6 +132,9 @@ export function TopBar() {
         <div className="lg:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
           {profile?.avatar_initials || "U"}
         </div>
+        <button onClick={signOut} className="lg:hidden p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
+          <LogOut className="h-4 w-4 text-muted-foreground" />
+        </button>
       </div>
     </header>
   );
