@@ -205,7 +205,7 @@ export default function Index() {
 
       <main>
         <section id="top" className="relative flex min-h-[min(900px,100svh)] items-end overflow-hidden pt-20">
-          <img src={heroImage} alt="Engineer overseeing an active BuildTrust construction project" className="absolute inset-0 h-full w-full object-cover object-center" width={1920} height={1088} fetchPriority="high" />
+          <img src={heroImage} alt="Engineer overseeing an active BuildTrust construction project" className="absolute inset-0 h-full w-full object-cover object-center" width={1920} height={1088} loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/80 to-foreground/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent" />
           <div className="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-28 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
