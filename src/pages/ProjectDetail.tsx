@@ -225,7 +225,6 @@ export default function ProjectDetail() {
                 try { await reviewMilestone.mutateAsync({ id: m.id, project_id: project.id, decision: "rejected", comment: c || undefined }); toast.success("Milestone rejected"); }
                 catch (e: any) { toast.error(e.message ?? "Failed"); }
               }}
-              onTogglePublish={() => updateMilestone.mutate({ id: m.id, project_id: project.id, is_published: !m.is_published })}
               onDelete={() => { if (confirm("Delete milestone?")) deleteMilestone.mutate({ id: m.id, project_id: project.id }); }}
             />
           ))}
@@ -339,10 +338,10 @@ export default function ProjectDetail() {
   );
 }
 
-function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, onTogglePublish, onDelete }: {
+function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, onDelete }: {
   m: any; projectId: string;
   onSubmitForReview: () => void; onApprove: () => void; onReject: () => void;
-  onTogglePublish: () => void; onDelete: () => void;
+  onDelete: () => void;
 }) {
   const [open, setOpen] = useState(true);
   const { data: subs = [] } = useSubMilestones(projectId, m.id);
@@ -415,8 +414,8 @@ function MilestoneCard({ m, projectId, onSubmitForReview, onApprove, onReject, o
                   </>
                 )}
                 {reviewStatus === "approved" && (
-                  <DropdownMenuItem onClick={onTogglePublish}>
-                    {m.is_published ? <><EyeOff className="h-4 w-4 mr-2" />Unpublish</> : <><Eye className="h-4 w-4 mr-2" />Republish</>}
+                  <DropdownMenuItem disabled>
+                    <Eye className="h-4 w-4 mr-2" />Published to client (approved)
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />

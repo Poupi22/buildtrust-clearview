@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { FileText, Download, CalendarDays, Sun, Pencil, Trash2, CheckCircle2, Eye } from "lucide-react";
-import {
-  useReports, useProjects, useDeleteReport, usePublishWeeklyReport, useReviewReport,
-} from "@/hooks/useBuildTrust";
+import { FileText, Download, CalendarDays, Sun, Pencil, Trash2, Eye } from "lucide-react";
+import { useReports, useProjects, useDeleteReport, useCanManageProject } from "@/hooks/useBuildTrust";
 import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { ReportReviewDialog } from "@/components/review/ReportReviewDialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateJournalPdf } from "@/lib/reportPdf";
 import { toast } from "sonner";
@@ -16,7 +14,7 @@ import { toast } from "sonner";
 type Tab = "daily" | "weekly";
 
 export default function Reports() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const { data: projects = [] } = useProjects();
   const [projectId, setProjectId] = useState<string>("");
   const [tab, setTab] = useState<Tab>("daily");
@@ -25,11 +23,8 @@ export default function Reports() {
 
   const { data: reports = [], isLoading } = useReports(activeProjectId);
   const del = useDeleteReport();
-  const publish = usePublishWeeklyReport();
-  const review = useReviewReport();
 
-  const isAdmin = role === "super-admin" || role === "company-admin";
-  const canManage = isAdmin || role === "engineer";
+  const canManage = useCanManageProject(activeProjectId);
 
   const filtered = useMemo(
     () => reports.filter((r: any) => r.report_type === tab),
@@ -45,21 +40,6 @@ export default function Reports() {
     catch (e: any) { toast.error(e.message ?? "Failed"); }
   };
 
-  const onPublish = async (r: any) => {
-    try { await publish.mutateAsync({ id: r.id, project_id: r.project_id }); toast.success("Published to client"); setViewing(null); }
-    catch (e: any) { toast.error(e.message ?? "Failed"); }
-  };
-
-  const onReject = async (r: any) => {
-    const comment = prompt("Reason for rejection (optional)?") ?? "";
-    try {
-      await review.mutateAsync({ id: r.id, project_id: r.project_id, decision: "rejected" });
-      if (comment) {/* keep simple */}
-      toast.success("Report rejected");
-      setViewing(null);
-    } catch (e: any) { toast.error(e.message ?? "Failed"); }
-  };
-
   const exportPdf = (type: "daily" | "weekly" | "all") => {
     if (!project) { toast.error("Pick a project first"); return; }
     generateJournalPdf(
@@ -68,6 +48,7 @@ export default function Reports() {
       { type, includeInternal: canManage },
     );
   };
+
 
   return (
     <div className="space-y-6">
@@ -131,52 +112,20 @@ export default function Reports() {
             onEdit={setEditing}
             onDelete={onDelete}
             isWeekly
-            onPublish={canManage ? onPublish : undefined}
           />
         </TabsContent>
       </Tabs>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
 
-      {/* View dialog */}
-      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
-          {viewing && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs uppercase tracking-wide bg-muted px-2 py-0.5 rounded">
-                    {viewing.report_type}
-                  </span>
-                  {viewing.title || (viewing.report_type === "weekly"
-                    ? `Week of ${viewing.week_start} → ${viewing.week_end}`
-                    : viewing.report_date)}
-                  <StatusBadge status={viewing.status} />
-                  {viewing.is_published && (
-                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Published</span>
-                  )}
-                </DialogTitle>
-              </DialogHeader>
-              <ReportBody r={viewing} canSeeInternal={canManage} />
-              <div className="flex gap-2 justify-end flex-wrap">
-                {canManage && viewing.report_type === "weekly" && viewing.status !== "approved" && (
-                  <>
-                    <Button variant="outline" onClick={() => onReject(viewing)}>Reject</Button>
-                    <Button onClick={() => onPublish(viewing)}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" />Approve &amp; publish
-                    </Button>
-                  </>
-                )}
-                {canManage && viewing.report_type === "weekly" && (
-                  <Button variant="outline" onClick={() => { setEditing(viewing); setViewing(null); }}>
-                    <Pencil className="h-4 w-4 mr-1" />Edit
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ReportReviewDialog
+        report={viewing}
+        open={!!viewing}
+        onOpenChange={(o) => !o && setViewing(null)}
+        canManage={canManage}
+        onEdit={(r) => setEditing(r)}
+      />
+
 
       {/* Edit dialog */}
       {editing && (
@@ -193,7 +142,7 @@ export default function Reports() {
 }
 
 function ReportList({
-  reports, currentUserId, canManage, onView, onEdit, onDelete, isWeekly, onPublish,
+  reports, currentUserId, canManage, onView, onEdit, onDelete, isWeekly,
 }: {
   reports: any[];
   currentUserId?: string;
@@ -202,7 +151,6 @@ function ReportList({
   onEdit: (r: any) => void;
   onDelete: (id: string) => void;
   isWeekly?: boolean;
-  onPublish?: (r: any) => void;
 }) {
   if (reports.length === 0) {
     return (
@@ -216,8 +164,10 @@ function ReportList({
     <div className="space-y-3">
       {reports.map((r) => {
         const isAuthor = r.author_id === currentUserId;
-        const canEdit = canManage || (isAuthor && ["draft", "rejected"].includes(r.status));
-        const canDelete = canManage || (isAuthor && ["draft", "rejected"].includes(r.status));
+        const state = r.state ?? r.status;
+        const editable = state !== "approved";
+        const canEdit = editable && (canManage || (isAuthor && ["draft", "pending", "rejected"].includes(state)));
+        const canDelete = editable && (canManage || (isAuthor && ["draft", "pending", "rejected"].includes(state)));
         const dateLabel = r.report_type === "weekly" && r.week_start
           ? `${r.week_start} → ${r.week_end}`
           : r.report_date;
@@ -228,9 +178,9 @@ function ReportList({
                 <div className="flex items-center gap-2 flex-wrap">
                   <FileText className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">{r.title || dateLabel}</span>
-                  <StatusBadge status={r.status} />
+                  <StatusBadge status={state} />
                   {r.is_published && (
-                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Published</span>
+                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Visible to client</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{dateLabel}</p>
@@ -240,11 +190,6 @@ function ReportList({
                 <Button size="icon" variant="ghost" onClick={() => onView(r)} title="View">
                   <Eye className="h-4 w-4" />
                 </Button>
-                {isWeekly && onPublish && r.status !== "approved" && (
-                  <Button size="icon" variant="ghost" onClick={() => onPublish(r)} title="Approve & publish" className="text-success">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </Button>
-                )}
                 {canEdit && (
                   <Button size="icon" variant="ghost" onClick={() => onEdit(r)} title="Edit">
                     <Pencil className="h-4 w-4" />
@@ -260,29 +205,6 @@ function ReportList({
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function ReportBody({ r, canSeeInternal }: { r: any; canSeeInternal: boolean }) {
-  const Section = ({ label, body }: { label: string; body?: string | null }) =>
-    body ? (
-      <div>
-        <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-1">{label}</p>
-        <p className="text-sm whitespace-pre-wrap">{body}</p>
-      </div>
-    ) : null;
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
-        {r.weather && <span>Weather: {r.weather}</span>}
-        {typeof r.workforce_count === "number" && r.workforce_count > 0 && <span>Workforce: {r.workforce_count}</span>}
-      </div>
-      <Section label="Summary" body={r.summary} />
-      <Section label="Achievements" body={r.achievements} />
-      <Section label="Challenges / blockers" body={r.challenges} />
-      <Section label={r.report_type === "weekly" ? "Plan for next week" : "Next-day activities"} body={r.next_plan} />
-      {canSeeInternal && <Section label="Internal notes" body={r.notes} />}
     </div>
   );
 }

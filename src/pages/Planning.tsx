@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProjects } from "@/hooks/useBuildTrust";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProjects, useCanManageProject } from "@/hooks/useBuildTrust";
 import { BaselinePlanPanel } from "@/components/planning/BaselinePlanPanel";
 import { WeeklyWorkPlanPanel } from "@/components/planning/WeeklyWorkPlanPanel";
 
 export default function Planning() {
-  const { role } = useAuth();
   const { data: projects = [] } = useProjects();
   const [projectId, setProjectId] = useState("");
   const activeProjectId = projectId || (projects as any[])[0]?.id;
-  const canManage = ["super-admin", "company-admin", "engineer"].includes(role ?? "");
+  const canManage = useCanManageProject(activeProjectId);
 
   return (
     <div className="space-y-6">
