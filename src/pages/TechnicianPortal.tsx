@@ -16,7 +16,7 @@ import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
-  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings,
+  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings, Home,
 } from "lucide-react";
 
 import logo from "@/assets/logo.jpg";
@@ -485,7 +485,14 @@ export default function TechnicianPortal() {
             );
           })}
         </nav>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t space-y-3">
+          <button
+            onClick={() => navigate("/")}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Home className="h-4 w-4" />
+            Home
+          </button>
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
               {profile?.avatar_initials || "U"}

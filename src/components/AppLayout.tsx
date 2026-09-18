@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
+  Home,
   LayoutDashboard,
   FolderKanban,
   FileText,
@@ -19,6 +20,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navItems = [
+  { key: "home", icon: Home, path: "/" },
   { key: "dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { key: "projects", icon: FolderKanban, path: "/projects" },
   { key: "planning", icon: CalendarRange, path: "/planning" },

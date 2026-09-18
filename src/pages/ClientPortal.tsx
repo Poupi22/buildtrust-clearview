@@ -10,6 +10,7 @@ import {
   FileText,
   Shield,
   LogOut,
+  Home,
   ChevronDown,
   ChevronRight,
   Settings as SettingsIcon,
@@ -116,6 +117,9 @@ export default function ClientPortal() {
               <span>Verified & Approved Updates Only</span>
             </div>
             <NotificationBell />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <Home className="h-3.5 w-3.5 mr-1" />Home
+            </Button>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-3.5 w-3.5 mr-1" />Sign out
             </Button>
