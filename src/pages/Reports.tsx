@@ -112,52 +112,20 @@ export default function Reports() {
             onEdit={setEditing}
             onDelete={onDelete}
             isWeekly
-            onPublish={canManage ? onPublish : undefined}
           />
         </TabsContent>
       </Tabs>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
 
-      {/* View dialog */}
-      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
-          {viewing && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs uppercase tracking-wide bg-muted px-2 py-0.5 rounded">
-                    {viewing.report_type}
-                  </span>
-                  {viewing.title || (viewing.report_type === "weekly"
-                    ? `Week of ${viewing.week_start} → ${viewing.week_end}`
-                    : viewing.report_date)}
-                  <StatusBadge status={viewing.status} />
-                  {viewing.is_published && (
-                    <span className="text-[10px] uppercase font-bold bg-success/15 text-success px-1.5 py-0.5 rounded">Published</span>
-                  )}
-                </DialogTitle>
-              </DialogHeader>
-              <ReportBody r={viewing} canSeeInternal={canManage} />
-              <div className="flex gap-2 justify-end flex-wrap">
-                {canManage && viewing.report_type === "weekly" && viewing.status !== "approved" && (
-                  <>
-                    <Button variant="outline" onClick={() => onReject(viewing)}>Reject</Button>
-                    <Button onClick={() => onPublish(viewing)}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" />Approve &amp; publish
-                    </Button>
-                  </>
-                )}
-                {canManage && viewing.report_type === "weekly" && (
-                  <Button variant="outline" onClick={() => { setEditing(viewing); setViewing(null); }}>
-                    <Pencil className="h-4 w-4 mr-1" />Edit
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ReportReviewDialog
+        report={viewing}
+        open={!!viewing}
+        onOpenChange={(o) => !o && setViewing(null)}
+        canManage={canManage}
+        onEdit={(r) => setEditing(r)}
+      />
+
 
       {/* Edit dialog */}
       {editing && (
