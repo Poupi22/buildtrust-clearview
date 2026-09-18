@@ -18,6 +18,7 @@ export const baseResources = {
         french: "French",
       },
       nav: {
+        home: "Home",
         dashboard: "Dashboard",
         projects: "Projects",
         planning: "Planning",
@@ -85,6 +86,7 @@ export const baseResources = {
         french: "Français",
       },
       nav: {
+        home: "Accueil",
         dashboard: "Tableau de bord",
         projects: "Projets",
         planning: "Planification",
