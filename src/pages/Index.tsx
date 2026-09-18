@@ -235,7 +235,7 @@ export default function Index() {
               {t.value.items.map((item, index) => {
                 const Icon = featureIcons[index];
                 return (
-                  <motion.article {...reveal} transition={{ duration: 0.45, delay: index * 0.07 }} key={item.title} className="border-b p-6 md:nth-[2]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0">
+                  <motion.article {...reveal} transition={{ duration: 0.45, delay: index * 0.07 }} key={item.title} className="border-b p-6 md:even:border-l lg:border-b-0 lg:border-l lg:first:border-l-0">
                     <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div>
                     <h3 className="mt-6 text-lg font-bold">{item.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.text}</p>
