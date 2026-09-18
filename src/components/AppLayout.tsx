@@ -19,7 +19,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navItems = [
-  { key: "dashboard", icon: LayoutDashboard, path: "/" },
+  { key: "dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { key: "projects", icon: FolderKanban, path: "/projects" },
   { key: "planning", icon: CalendarRange, path: "/planning" },
   { key: "reports", icon: FileText, path: "/reports" },

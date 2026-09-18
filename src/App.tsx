@@ -53,6 +53,7 @@ function AppRoutes() {
   if (role === "client" || role === "client-assistant") {
     return (
       <Routes>
+        <Route path="/" element={<Index />} />
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/settings" element={<ClientPortal />} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
@@ -64,6 +65,7 @@ function AppRoutes() {
   if (role === "technician" || role === "project-lead") {
     return (
       <Routes>
+        <Route path="/" element={<Index />} />
         <Route path="/technician" element={<TechnicianPortal />} />
         <Route path="/settings" element={<TechnicianPortal />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
@@ -75,8 +77,9 @@ function AppRoutes() {
   // Admin / Engineer / Super-admin → full dashboard
   return (
     <Routes>
+      <Route path="/" element={<Index />} />
       <Route element={<RootLayout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/planning" element={<Planning />} />
@@ -88,7 +91,7 @@ function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="/portal" element={<ClientPortal />} />
-      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
