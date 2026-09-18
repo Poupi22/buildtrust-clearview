@@ -20,7 +20,6 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navItems = [
-  { key: "home", icon: Home, path: "/" },
   { key: "dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { key: "projects", icon: FolderKanban, path: "/projects" },
   { key: "planning", icon: CalendarRange, path: "/planning" },
@@ -43,6 +42,13 @@ export function AppSidebar() {
         <img src={logo} alt="BuildTrust" className="h-10 object-contain" />
       </div>
       <nav className="flex-1 p-3 space-y-1">
+        <button
+          onClick={signOut}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Home className="h-4 w-4" />
+          {t("nav.home")}
+        </button>
         {navItems.map((item) => {
           const active = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
           return (
@@ -111,7 +117,7 @@ export function MobileBottomNav() {
 }
 
 export function TopBar() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-card px-4 py-3 lg:px-6">
       <div className="lg:hidden">
@@ -126,6 +132,9 @@ export function TopBar() {
         <div className="lg:hidden flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
           {profile?.avatar_initials || "U"}
         </div>
+        <button onClick={signOut} className="lg:hidden p-1.5 rounded-lg hover:bg-muted transition-colors" title="Sign out">
+          <LogOut className="h-4 w-4 text-muted-foreground" />
+        </button>
       </div>
     </header>
   );

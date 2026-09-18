@@ -487,7 +487,7 @@ export default function TechnicianPortal() {
         </nav>
         <div className="p-4 border-t space-y-3">
           <button
-            onClick={() => navigate("/")}
+            onClick={signOut}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <Home className="h-4 w-4" />
