@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
-import { FileText, Download, CalendarDays, Sun, Pencil, Trash2, CheckCircle2, Eye } from "lucide-react";
-import {
-  useReports, useProjects, useDeleteReport, usePublishWeeklyReport, useReviewReport,
-} from "@/hooks/useBuildTrust";
+import { FileText, Download, CalendarDays, Sun, Pencil, Trash2, Eye } from "lucide-react";
+import { useReports, useProjects, useDeleteReport, useCanManageProject } from "@/hooks/useBuildTrust";
 import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
+import { ReportReviewDialog } from "@/components/review/ReportReviewDialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateJournalPdf } from "@/lib/reportPdf";
 import { toast } from "sonner";
@@ -16,7 +14,7 @@ import { toast } from "sonner";
 type Tab = "daily" | "weekly";
 
 export default function Reports() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const { data: projects = [] } = useProjects();
   const [projectId, setProjectId] = useState<string>("");
   const [tab, setTab] = useState<Tab>("daily");
@@ -25,11 +23,8 @@ export default function Reports() {
 
   const { data: reports = [], isLoading } = useReports(activeProjectId);
   const del = useDeleteReport();
-  const publish = usePublishWeeklyReport();
-  const review = useReviewReport();
 
-  const isAdmin = role === "super-admin" || role === "company-admin";
-  const canManage = isAdmin || role === "engineer";
+  const canManage = useCanManageProject(activeProjectId);
 
   const filtered = useMemo(
     () => reports.filter((r: any) => r.report_type === tab),
@@ -45,21 +40,6 @@ export default function Reports() {
     catch (e: any) { toast.error(e.message ?? "Failed"); }
   };
 
-  const onPublish = async (r: any) => {
-    try { await publish.mutateAsync({ id: r.id, project_id: r.project_id }); toast.success("Published to client"); setViewing(null); }
-    catch (e: any) { toast.error(e.message ?? "Failed"); }
-  };
-
-  const onReject = async (r: any) => {
-    const comment = prompt("Reason for rejection (optional)?") ?? "";
-    try {
-      await review.mutateAsync({ id: r.id, project_id: r.project_id, decision: "rejected" });
-      if (comment) {/* keep simple */}
-      toast.success("Report rejected");
-      setViewing(null);
-    } catch (e: any) { toast.error(e.message ?? "Failed"); }
-  };
-
   const exportPdf = (type: "daily" | "weekly" | "all") => {
     if (!project) { toast.error("Pick a project first"); return; }
     generateJournalPdf(
@@ -68,6 +48,7 @@ export default function Reports() {
       { type, includeInternal: canManage },
     );
   };
+
 
   return (
     <div className="space-y-6">
