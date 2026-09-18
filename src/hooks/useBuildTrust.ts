@@ -349,32 +349,101 @@ export function useDeleteReport() {
   });
 }
 
-export function usePublishWeeklyReport() {
+/**
+ * Single, authoritative review path for daily & weekly reports.
+ * Every decision writes: report state, publication, decision record,
+ * signature snapshot, immutable version snapshot and audit entry.
+ * Approving a weekly report is what publishes it — there is no separate publish action.
+ */
+export function useReviewReport() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { id: string; project_id: string }) => {
+    mutationFn: async (input: {
+      id: string;
+      project_id: string;
+      decision: "approved" | "rejected" | "revision-requested";
+      reason?: string | null;
+    }) => {
       if (!user) throw new Error("Not authenticated");
+
+      const { data: current, error: readErr } = await supabase
+        .from("daily_reports")
+        .select("*")
+        .eq("id", input.id)
+        .single();
+      if (readErr) throw readErr;
+      if (current.state === "approved") {
+        throw new Error("This report is already approved and can no longer be changed.");
+      }
+
+      const approved = input.decision === "approved";
+      const state = approved ? "approved" : "rejected";
+      const publish = approved && current.report_type === "weekly";
+      const now = new Date().toISOString();
+
+      const { data: sig } = await supabase
+        .from("signature_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_current", true)
+        .maybeSingle();
+      const signature_snapshot = sig
+        ? ({ full_name: sig.full_name, initials: sig.initials, kind: sig.kind, version: sig.version, signature_data: sig.signature_data } as any)
+        : null;
+
       const { error } = await supabase
         .from("daily_reports")
         .update({
-          status: "approved",
-          state: "approved",
-          is_published: true,
-          published_at: new Date().toISOString(),
-          published_by: user.id,
-          reviewed_at: new Date().toISOString(),
+          state: state as any,
+          is_published: publish,
+          published_at: publish ? now : null,
+          published_by: publish ? user.id : null,
+          review_comment: input.reason ?? null,
+          reviewed_at: now,
           reviewed_by: user.id,
-        })
+          approver_signature_snapshot: approved ? signature_snapshot : null,
+        } as any)
         .eq("id", input.id);
       if (error) throw error;
+
       await supabase.from("approvals").insert({
         project_id: input.project_id,
         entity_type: "daily_report",
         entity_id: input.id,
-        decision: "approved",
+        decision: input.decision as any,
         reviewer_id: user.id,
+        comment: input.reason ?? null,
       });
+
+      await supabase.from("report_approvals").insert({
+        report_id: input.id,
+        project_id: input.project_id,
+        reviewer_id: user.id,
+        decision: input.decision as any,
+        reason: input.reason ?? null,
+        signature_profile_id: sig?.id ?? null,
+        signature_snapshot,
+      });
+
+      await supabase.from("report_versions").insert({
+        report_id: input.id,
+        project_id: input.project_id,
+        revision: (current.revision ?? 0) + 1,
+        state: state as any,
+        snapshot: { ...current, state, is_published: publish } as any,
+        created_by: user.id,
+      });
+
+      await supabase.rpc("log_audit", {
+        _action: `report_${input.decision}`,
+        _entity_type: "daily_report",
+        _entity_id: input.id,
+        _project_id: input.project_id,
+        _old: { state: current.state } as any,
+        _new: { state, is_published: publish } as any,
+        _reason: input.reason ?? null,
+      } as any);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reports"] });
@@ -383,51 +452,15 @@ export function usePublishWeeklyReport() {
   });
 }
 
-export function useReviewReport() {
-  const qc = useQueryClient();
-  const { user } = useAuth();
-  return useMutation({
-    mutationFn: async (input: { id: string; project_id: string; decision: "approved" | "rejected"; reason?: string | null }) => {
-      if (!user) throw new Error("Not authenticated");
-      const patch: any = {
-        status: input.decision === "approved" ? "approved" : "rejected",
-        state: input.decision === "approved" ? "approved" : "rejected",
-        review_comment: input.reason ?? null,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: user.id,
-      };
-      const { error } = await supabase.from("daily_reports").update(patch).eq("id", input.id);
-      if (error) throw error;
-      await supabase.from("approvals").insert({
-        project_id: input.project_id,
-        entity_type: "daily_report",
-        entity_id: input.id,
-        decision: input.decision,
-        reviewer_id: user.id,
-        comment: input.reason ?? null,
-      });
-      const { data: sig } = await supabase
-        .from("signature_profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("is_current", true)
-        .maybeSingle();
-      await supabase.from("report_approvals").insert({
-        report_id: input.id,
-        project_id: input.project_id,
-        reviewer_id: user.id,
-        decision: input.decision,
-        reason: input.reason ?? null,
-        signature_profile_id: sig?.id ?? null,
-        signature_snapshot: sig ? ({ full_name: sig.full_name, initials: sig.initials, kind: sig.kind, version: sig.version, signature_data: sig.signature_data } as any) : null,
-      });
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reports"] });
-      qc.invalidateQueries({ queryKey: ["approvals"] });
-    },
-  });
+/** One permission rule: can this person manage (review/plan/edit) this project? */
+export function useCanManageProject(projectId?: string) {
+  const { user, role } = useAuth();
+  const { data: members = [] } = useProjectMembers(projectId);
+  if (role === "super-admin" || role === "company-admin") return true;
+  const mine = (members as any[]).find((m) => m.user_id === user?.id);
+  return mine?.role === "manager" || mine?.role === "engineer";
 }
+
 
 // ---------------- Issues ----------------
 export function useIssues(projectId?: string) {
