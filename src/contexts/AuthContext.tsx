@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
+      setAuthReady(true);
     });
 
     const initializeAuth = async () => {
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+      setAuthReady(true);
     };
 
     initializeAuth();
