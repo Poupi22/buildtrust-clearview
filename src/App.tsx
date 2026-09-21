@@ -22,6 +22,7 @@ import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import OAuthConsent from "./pages/OAuthConsent";
+import Assistant from "./pages/Assistant";
 import { Loader2 } from "lucide-react";
 
 
@@ -58,6 +59,7 @@ function AppRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/settings" element={<ClientPortal />} />
+        <Route path="/assistant" element={<Assistant />} />
         <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
       </Routes>
@@ -71,6 +73,7 @@ function AppRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/technician" element={<TechnicianPortal />} />
         <Route path="/settings" element={<TechnicianPortal />} />
+        <Route path="/assistant" element={<Assistant />} />
         <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="*" element={<Navigate to="/technician" replace />} />
       </Routes>
@@ -93,6 +96,7 @@ function AppRoutes() {
         <Route path="/approvals" element={<Approvals />} />
         <Route path="/team" element={<Team />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/assistant" element={<Assistant />} />
       </Route>
       <Route path="/portal" element={<ClientPortal />} />
       <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />

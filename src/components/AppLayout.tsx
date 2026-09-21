@@ -13,6 +13,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Bot,
 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navItems = [
   { key: "dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { key: "assistant", icon: Bot, path: "/assistant" },
   { key: "projects", icon: FolderKanban, path: "/projects" },
   { key: "planning", icon: CalendarRange, path: "/planning" },
   { key: "reports", icon: FileText, path: "/reports" },

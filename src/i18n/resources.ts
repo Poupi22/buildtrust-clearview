@@ -121,6 +121,17 @@ export const baseResources = {
         photos: "Photos du site",
         documents: "Documents",
       },
+      assistant: {
+        title: "Assistant BuildTrust",
+        subtitle: "Posez vos questions sur vos projets, rapports et incidents",
+        newConversation: "Nouvelle conversation",
+        emptyTitle: "Bonjour{{name}} ! Comment puis-je vous aider ?",
+        emptyDescription: "Interrogez l'avancement des projets, les jalons, les journaux de chantier, les incidents ou vos tâches. Je réponds à partir de vos données BuildTrust en direct.",
+        placeholder: "Posez une question sur vos projets...",
+        thinking: "Réflexion en cours...",
+        error: "L'assistant est indisponible pour le moment. Réessayez dans un instant.",
+        privacyNote: "Cette conversation est conservée uniquement dans ce navigateur.",
+      },
       settings: {
         title: "Paramètres",
         subtitle: "Gérez votre compte, vos préférences et la configuration de l'entreprise",
