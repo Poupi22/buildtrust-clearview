@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.jpg";
 import { Building2, Mail, Lock, User, ArrowRight, Loader2, HardHat, Eye } from "lucide-react";
@@ -15,6 +15,9 @@ export default function Login() {
   const [role, setRole] = useState<"company-admin" | "engineer" | "technician" | "client">("engineer");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +26,8 @@ export default function Login() {
     setLoading(false);
     if (error) {
       toast.error(error.message);
+    } else if (nextPath) {
+      navigate(nextPath, { replace: true });
     }
     // Routing handled by App.tsx after auth state change
   };
