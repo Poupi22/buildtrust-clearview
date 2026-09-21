@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Bot } from "lucide-react";
 import SettingsPage from "@/pages/Settings";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -484,6 +485,13 @@ export default function TechnicianPortal() {
               </button>
             );
           })}
+          <button
+            onClick={() => navigate("/assistant")}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Bot className="h-4 w-4" />
+            <span className="flex-1 text-left">Assistant</span>
+          </button>
         </nav>
         <div className="p-4 border-t space-y-3">
           <button
