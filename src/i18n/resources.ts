@@ -50,6 +50,7 @@ export const baseResources = {
         placeholder: "Ask about your projects...",
         thinking: "Thinking...",
         error: "The assistant is unavailable right now. Please try again in a moment.",
+        sessionExpired: "Your session has expired. Please sign in again.",
         privacyNote: "This conversation is stored only in this browser.",
       },
       settings: {
@@ -130,6 +131,7 @@ export const baseResources = {
         placeholder: "Posez une question sur vos projets...",
         thinking: "Réflexion en cours...",
         error: "L'assistant est indisponible pour le moment. Réessayez dans un instant.",
+        sessionExpired: "Votre session a expiré. Veuillez vous reconnecter.",
         privacyNote: "Cette conversation est conservée uniquement dans ce navigateur.",
       },
       settings: {
