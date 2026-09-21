@@ -19,7 +19,8 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
-import { Download } from "lucide-react";
+import { Download, Bot } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
@@ -117,6 +118,9 @@ export default function ClientPortal() {
               <span>Verified & Approved Updates Only</span>
             </div>
             <NotificationBell />
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/assistant"><Bot className="h-3.5 w-3.5 mr-1" />Assistant</Link>
+            </Button>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <Home className="h-3.5 w-3.5 mr-1" />Home
             </Button>
