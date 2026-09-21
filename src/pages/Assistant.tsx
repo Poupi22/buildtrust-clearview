@@ -4,6 +4,8 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useTranslation } from "react-i18next";
 import { Bot, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
 import {
   Conversation,
   ConversationContent,
@@ -44,12 +46,20 @@ export default function Assistant() {
     () =>
       new DefaultChatTransport({
         api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assistant-chat`,
-        headers: () => ({
-          Authorization: `Bearer ${session?.access_token ?? ""}`,
-        }),
+        // Always fetch a fresh (auto-refreshed) token at send time so a long-open
+        // tab never posts an expired access token.
+        headers: async () => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token ?? session?.access_token ?? "";
+          return {
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+          };
+        },
       }),
     [session?.access_token],
   );
+
 
   const { messages, sendMessage, setMessages, status, error } = useChat({
     id: "buildtrust-assistant",
