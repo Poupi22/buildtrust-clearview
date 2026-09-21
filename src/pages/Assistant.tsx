@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,8 @@ function loadMessages(): UIMessage[] {
 
 export default function Assistant() {
   const { t, i18n } = useTranslation();
-  const { session, profile } = useAuth();
+  const { profile, signOut } = useAuth();
+  const [sessionError, setSessionError] = useState(false);
   const savedRef = useRef<UIMessage[] | null>(null);
   if (savedRef.current === null) savedRef.current = loadMessages();
 
@@ -46,18 +47,35 @@ export default function Assistant() {
     () =>
       new DefaultChatTransport({
         api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assistant-chat`,
-        // Always fetch a fresh (auto-refreshed) token at send time so a long-open
-        // tab never posts an expired access token.
+        // Resolve authentication for every request. getSession() may return a
+        // cached token, so explicitly refresh it when it is near expiry.
         headers: async () => {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token ?? session?.access_token ?? "";
+          const { data, error: sessionReadError } = await supabase.auth.getSession();
+          if (sessionReadError || !data.session) {
+            setSessionError(true);
+            throw new Error(t("assistant.sessionExpired"));
+          }
+
+          const expiresAtMs = (data.session.expires_at ?? 0) * 1000;
+          let currentSession = data.session;
+          if (expiresAtMs <= Date.now() + 60_000) {
+            const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError || !refreshed.session) {
+              setSessionError(true);
+              await signOut();
+              throw new Error(t("assistant.sessionExpired"));
+            }
+            currentSession = refreshed.session;
+          }
+
+          setSessionError(false);
           return {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${currentSession.access_token}`,
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
           };
         },
       }),
-    [session?.access_token],
+    [signOut, t],
   );
 
 
@@ -84,10 +102,16 @@ export default function Assistant() {
     textareaFocusKey.current += 1;
   };
 
-  const handleSubmit = (message: { text?: string }) => {
+  const handleSubmit = async (message: { text?: string }) => {
     const text = message.text?.trim();
     if (!text || status === "submitted" || status === "streaming") return;
-    sendMessage({ text });
+    setSessionError(false);
+    try {
+      await sendMessage({ text });
+    } catch {
+      // useChat exposes request failures through `error`; swallowing the
+      // rejected promise prevents an auth failure from crashing the page.
+    }
   };
 
   const firstName = profile?.full_name?.split(" ")[0];
@@ -150,9 +174,11 @@ export default function Assistant() {
               </MessageContent>
             </Message>
           )}
-          {error && (
+          {(error || sessionError) && (
             <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {t("assistant.error")}
+              {sessionError || error?.message?.includes("401") || error?.message?.includes("session has expired")
+                ? t("assistant.sessionExpired")
+                : error?.message || t("assistant.error")}
             </div>
           )}
         </ConversationContent>
