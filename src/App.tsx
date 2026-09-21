@@ -21,6 +21,7 @@ import TechnicianPortal from "./pages/TechnicianPortal";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
+import OAuthConsent from "./pages/OAuthConsent";
 import { Loader2 } from "lucide-react";
 
 
