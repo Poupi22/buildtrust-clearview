@@ -56,21 +56,16 @@ export default function Assistant() {
             throw new Error(t("assistant.sessionExpired"));
           }
 
-          const expiresAtMs = (data.session.expires_at ?? 0) * 1000;
-          let currentSession = data.session;
-          if (expiresAtMs <= Date.now() + 60_000) {
-            const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError || !refreshed.session) {
-              setSessionError(true);
-              await supabase.auth.signOut();
-              throw new Error(t("assistant.sessionExpired"));
-            }
-            currentSession = refreshed.session;
+          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !refreshed.session) {
+            setSessionError(true);
+            await supabase.auth.signOut();
+            throw new Error(t("assistant.sessionExpired"));
           }
 
           setSessionError(false);
           return {
-            Authorization: `Bearer ${currentSession.access_token}`,
+            Authorization: `Bearer ${refreshed.session.access_token}`,
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
           };
         },
