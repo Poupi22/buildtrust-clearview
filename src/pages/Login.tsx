@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.jpg";
 import { Building2, Mail, Lock, User, ArrowRight, Loader2, HardHat, Eye } from "lucide-react";
