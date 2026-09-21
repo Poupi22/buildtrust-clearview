@@ -38,7 +38,7 @@ function loadMessages(): UIMessage[] {
 
 export default function Assistant() {
   const { t, i18n } = useTranslation();
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const [sessionError, setSessionError] = useState(false);
   const savedRef = useRef<UIMessage[] | null>(null);
   if (savedRef.current === null) savedRef.current = loadMessages();
@@ -62,7 +62,7 @@ export default function Assistant() {
             const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError || !refreshed.session) {
               setSessionError(true);
-              await signOut();
+              await supabase.auth.signOut();
               throw new Error(t("assistant.sessionExpired"));
             }
             currentSession = refreshed.session;
@@ -75,7 +75,7 @@ export default function Assistant() {
           };
         },
       }),
-    [signOut, t],
+    [t],
   );
 
 
