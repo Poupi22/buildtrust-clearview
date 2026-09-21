@@ -10,7 +10,6 @@ import {
   FileText,
   Shield,
   LogOut,
-  Home,
   ChevronDown,
   ChevronRight,
   Settings as SettingsIcon,
@@ -19,13 +18,13 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useFirstProject, useMilestones, useReports, useMedia, getMediaUrl, useSubMilestones, useProgressReports } from "@/hooks/useBuildTrust";
-import { Download, Bot } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientPhotoGallery } from "@/components/ClientPhotoGallery";
 import logo from "@/assets/logo.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import SettingsPage from "@/pages/Settings";
+import { FloatingAssistantButton } from "@/components/FloatingAssistantButton";
 
 type PortalTab = "overview" | "milestones" | "updates" | "photos" | "documents" | "settings";
 
@@ -118,12 +117,6 @@ export default function ClientPortal() {
               <span>Verified & Approved Updates Only</span>
             </div>
             <NotificationBell />
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/assistant"><Bot className="h-3.5 w-3.5 mr-1" />Assistant</Link>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={signOut}>
-              <Home className="h-3.5 w-3.5 mr-1" />Home
-            </Button>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-3.5 w-3.5 mr-1" />Sign out
             </Button>
@@ -358,6 +351,7 @@ export default function ClientPortal() {
           </p>
         </footer>
       </div>
+      <FloatingAssistantButton />
     </div>
   );
 }

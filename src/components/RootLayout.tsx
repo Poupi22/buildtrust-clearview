@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar, MobileBottomNav, TopBar } from "./AppLayout";
+import { FloatingAssistantButton } from "./FloatingAssistantButton";
 
 export function RootLayout() {
   return (
@@ -11,6 +12,7 @@ export function RootLayout() {
           <Outlet />
         </main>
       </div>
+      <FloatingAssistantButton />
       <MobileBottomNav />
     </div>
   );

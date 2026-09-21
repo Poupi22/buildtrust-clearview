@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bot } from "lucide-react";
 import SettingsPage from "@/pages/Settings";
+import { FloatingAssistantButton } from "@/components/FloatingAssistantButton";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjects, useMilestones, useSubMilestones, useProgressReports, useDeleteProgressReport,
@@ -17,7 +17,7 @@ import { ReportFormDialog } from "@/components/dialogs/ReportFormDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LogOut, HardHat, ClipboardList, FileText, Calendar, ChevronRight,
-  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings, Home,
+  AlertCircle, Trash2, History, LayoutDashboard, NotebookPen, Settings,
 } from "lucide-react";
 
 import logo from "@/assets/logo.jpg";
@@ -485,22 +485,8 @@ export default function TechnicianPortal() {
               </button>
             );
           })}
-          <button
-            onClick={() => navigate("/assistant")}
-            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <Bot className="h-4 w-4" />
-            <span className="flex-1 text-left">Assistant</span>
-          </button>
         </nav>
         <div className="p-4 border-t space-y-3">
-          <button
-            onClick={signOut}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <Home className="h-4 w-4" />
-            Home
-          </button>
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
               {profile?.avatar_initials || "U"}
@@ -608,6 +594,7 @@ export default function TechnicianPortal() {
           trigger={null as any}
         />
       )}
+      <FloatingAssistantButton />
     </div>
   );
 }
