@@ -48,7 +48,7 @@ export default function Assistant() {
       new DefaultChatTransport({
         api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assistant-chat`,
         // Resolve authentication for every request. getSession() may return a
-        // cached token, so explicitly refresh it when it is near expiry.
+        // cached token, so validate it with the auth server before using it.
         headers: async () => {
           const { data, error: sessionReadError } = await supabase.auth.getSession();
           if (sessionReadError || !data.session) {
@@ -56,16 +56,21 @@ export default function Assistant() {
             throw new Error(t("assistant.sessionExpired"));
           }
 
-          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError || !refreshed.session) {
-            setSessionError(true);
-            await supabase.auth.signOut();
-            throw new Error(t("assistant.sessionExpired"));
+          let accessToken = data.session.access_token;
+          const { error: validationError } = await supabase.auth.getUser(accessToken);
+          if (validationError) {
+            const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError || !refreshed.session) {
+              setSessionError(true);
+              await supabase.auth.signOut();
+              throw new Error(t("assistant.sessionExpired"));
+            }
+            accessToken = refreshed.session.access_token;
           }
 
           setSessionError(false);
           return {
-            Authorization: `Bearer ${refreshed.session.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
           };
         },
