@@ -15,6 +15,13 @@
       "when": 1789740994351,
       "tag": "0001_fix_report_status_sync_types",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790689031042,
+      "tag": "0002_add_daily_reports_review_comment",
+      "breakpoints": true
     }
   ]
 }

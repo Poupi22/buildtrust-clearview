@@ -297,6 +297,7 @@ export type Database = {
           report_date: string
           report_ref: string | null
           report_type: string
+          review_comment: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           revision: number
@@ -349,6 +350,7 @@ export type Database = {
           report_date: string
           report_ref?: string | null
           report_type?: string
+          review_comment?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           revision?: number
@@ -401,6 +403,7 @@ export type Database = {
           report_date?: string
           report_ref?: string | null
           report_type?: string
+          review_comment?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           revision?: number
