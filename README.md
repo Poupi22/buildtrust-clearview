@@ -1,11 +1,4 @@
 # BuildTrust App
-
-Using the following, extract the most appropriate information to build a mobile app named BuildTrust with the following slogan:Slogan: "Building Structures. Building Trust" and the attached Logo
-
-Act as a senior product manager, civil engineering domain analyst, solution architect, UI/UX designer, mobile engineer, backend engineer, database architect, DevOps engineer, and QA lead.
-
-Your task is to design and build a production-ready application called **BuildTrust**.
-
 ==================================================
 
 1. APP CONTEXT
